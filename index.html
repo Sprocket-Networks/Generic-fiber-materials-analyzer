@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materials Analyzer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #232733;
+  --border: #2e3344;
+  --text: #e4e6ed;
+  --text-dim: #8b8fa3;
+  --text-muted: #5c6178;
+  --accent: #6c5ce7;
+  --accent-light: #a29bfe;
+  --green: #00cec9;
+  --green-dim: rgba(0,206,201,0.15);
+  --blue: #74b9ff;
+  --blue-dim: rgba(116,185,255,0.15);
+  --orange: #fdcb6e;
+  --orange-dim: rgba(253,203,110,0.15);
+  --red: #ff7675;
+  --red-dim: rgba(255,118,117,0.15);
+  --purple: #a29bfe;
+  --purple-dim: rgba(162,155,254,0.15);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* ─── TOP NAV ─── */
+.topnav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  gap: 24px;
+  position: sticky; top:0; z-index: 100;
+}
+.topnav-brand {
+  display:flex; align-items:center; gap:10px;
+  font-weight:600; font-size:15px; color:var(--text);
+  white-space: nowrap;
+}
+.topnav-brand .dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+.topnav-tabs { display:flex; gap:4px; }
+.topnav-tab {
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  font-size:13px; font-weight:500; color:var(--text-dim);
+  cursor:pointer; transition: all .15s; border:none; background:none;
+}
+.topnav-tab:hover { color:var(--text); background:var(--surface2); }
+.topnav-tab.active { color:var(--accent-light); background:rgba(108,92,231,0.15); }
+.topnav-spacer { flex:1; }
+.topnav-actions { display:flex; gap:8px; align-items:center; }
+.btn {
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text-dim); transition: all .15s;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.btn:hover { color:var(--text); border-color:var(--text-muted); }
+.btn input[type="file"] { display:none; }
+.btn-accent { background:var(--accent); color:white; border-color:var(--accent); }
+.btn-accent:hover { background:#5a4bd6; }
+
+/* ─── PROJECT HEADER ─── */
+.project-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.project-info { display:flex; flex-direction:column; gap:4px; }
+.project-name {
+  background:none; border:none; color:var(--text); font-size:20px;
+  font-weight:600; font-family:inherit; outline:none; width:400px;
+}
+.project-name::placeholder { color:var(--text-muted); }
+.project-sub {
+  background:none; border:none; color:var(--text-dim); font-size:13px;
+  font-family:inherit; outline:none; width:400px;
+}
+.project-sub::placeholder { color:var(--text-muted); }
+.project-badges { display:flex; gap:8px; }
+.badge {
+  padding: 4px 10px; border-radius:20px; font-size:11px; font-weight:600;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.badge-ftth { background:var(--green-dim); color:var(--green); }
+.badge-backbone { background:var(--blue-dim); color:var(--blue); }
+
+/* ─── ONBOARDING ─── */
+.onboard-overlay {
+  position:fixed; inset:0; background:rgba(15,17,23,0.95);
+  display:flex; align-items:center; justify-content:center; z-index:1000;
+  backdrop-filter: blur(8px);
+}
+.onboard-overlay.hidden { display:none; }
+.onboard-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:48px; text-align:center;
+  max-width:520px; width:90%; box-shadow: var(--shadow);
+}
+.onboard-card h2 { font-size:24px; font-weight:600; margin-bottom:6px; }
+.onboard-card .subtitle { color:var(--text-dim); font-size:14px; margin-bottom:28px; }
+.dropzone {
+  border:2px dashed var(--border); border-radius:var(--radius);
+  padding:40px; cursor:pointer; transition:all .2s;
+  background:var(--surface2); margin-bottom:20px;
+}
+.dropzone:hover, .dropzone.drag-over {
+  border-color:var(--accent); background:rgba(108,92,231,0.08);
+}
+.dropzone-icon { font-size:36px; margin-bottom:8px; opacity:.7; }
+.dropzone-text { font-size:14px; font-weight:500; color:var(--text); }
+.dropzone-sub { font-size:12px; color:var(--text-muted); margin-top:4px; }
+.onboard-formats {
+  display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.onboard-divider { color:var(--text-muted); font-size:12px; margin:12px 0; }
+
+/* ─── STATUS ─── */
+.status-toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  background:var(--surface); border:1px solid var(--border);
+  padding:10px 20px; border-radius:var(--radius); font-size:13px;
+  box-shadow:var(--shadow); z-index:200; display:none;
+  transition: all .3s;
+}
+.status-toast.visible { display:block; }
+.status-toast.error { border-color:var(--red); color:var(--red); }
+.status-toast.success { border-color:var(--green); color:var(--green); }
+
+/* ─── LAYOUT ─── */
+.view { display:none; height:calc(100vh - 56px - 65px); }
+.view.active { display:flex; }
+
+/* ─── MAP VIEW ─── */
+.map-sidebar {
+  width:260px; min-width:260px; background:var(--surface);
+  border-right:1px solid var(--border); overflow-y:auto;
+  padding:16px; font-size:13px;
+}
+.map-sidebar h4 {
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:1px; color:var(--text-muted); margin:16px 0 8px;
+}
+.map-sidebar h4:first-child { margin-top:0; }
+.stat { display:flex; justify-content:space-between; padding:3px 0; }
+.stat .val { font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
+.sep { border-top:1px solid var(--border); margin:12px 0; }
+.chk { display:flex; align-items:center; gap:8px; padding:3px 0; }
+.chk input { accent-color:var(--accent); }
+.chk label { cursor:pointer; flex:1; color:var(--text-dim); font-size:12px; }
+.chk .ft { margin-left:auto; font-size:10px; color:var(--text-muted); font-variant-numeric:tabular-nums; }
+.legend-row { display:flex; align-items:center; gap:8px; padding:2px 0; font-size:12px; color:var(--text-dim); }
+.legend-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+.map-wrap { flex:1; position:relative; }
+#map { width:100%; height:100%; background:var(--bg); }
+select.sidebar-select {
+  width:100%; padding:5px 8px; background:var(--surface2); color:var(--text);
+  border:1px solid var(--border); border-radius:var(--radius-sm);
+  font-size:12px; margin-top:4px;
+}
+
+/* ─── DASHBOARD VIEW ─── */
+.dash { flex:1; overflow-y:auto; padding:24px; }
+.dash-section { margin-bottom:32px; }
+.dash-section-title {
+  font-size:14px; font-weight:600; color:var(--text);
+  margin-bottom:14px; display:flex; align-items:center; gap:10px;
+}
+.dash-section-title .line { flex:1; height:1px; background:var(--border); }
+
+.cost-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px;
+}
+.card-title {
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.8px; color:var(--text-muted); margin-bottom:12px;
+}
+.card-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:4px 0; font-size:13px;
+}
+.card-row .lbl { color:var(--text-dim); }
+.card-row .val { font-weight:600; font-variant-numeric:tabular-nums; }
+.card-row .cst { color:var(--accent-light); font-weight:600; font-size:12px; font-variant-numeric:tabular-nums; }
+.card-row input[type="number"] {
+  width:72px; padding:3px 6px; background:var(--surface2); color:var(--text);
+  border:1px solid var(--border); border-radius:4px; text-align:right;
+  font-size:12px; font-family:inherit;
+}
+.card-row input[type="number"]:focus { border-color:var(--accent); outline:none; }
+.card-total {
+  border-top:1px solid var(--border); margin-top:6px; padding-top:6px;
+  font-weight:600;
+}
+
+.quarter-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px; margin-bottom:12px;
+}
+.quarter-header {
+  font-size:16px; font-weight:600; color:var(--accent-light); margin-bottom:14px;
+}
+.quarter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+
+.budget-bar {
+  background: linear-gradient(135deg, var(--accent), #8b7cf6);
+  border-radius:var(--radius); padding:14px 20px; margin-bottom:20px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.budget-bar .budget-label { font-size:13px; opacity:.85; }
+.budget-bar .budget-amount { font-size:22px; font-weight:700; }
+
+.total-budget-bar {
+  background: linear-gradient(135deg, #2d3436, #636e72);
+  border:1px solid var(--border);
+  border-radius:var(--radius); padding:18px 24px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.total-budget-bar .budget-label { font-size:14px; }
+.total-budget-bar .budget-amount { font-size:26px; font-weight:700; }
+
+/* ─── MODAL ─── */
+.modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:500; display:none; align-items:center; justify-content:center; }
+.modal-bg.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; max-width:440px; width:90%; }
+.modal h3 { font-size:16px; margin-bottom:12px; }
+.modal input[type="text"] {
+  width:100%; padding:9px 12px; background:var(--surface2); color:var(--text);
+  border:1px solid var(--border); border-radius:var(--radius-sm);
+  font-size:13px; margin-bottom:12px;
+}
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--text-muted); }
+
+/* leaflet overrides */
+.leaflet-control-zoom a { background:var(--surface)!important; color:var(--text)!important; border-color:var(--border)!important; }
+.leaflet-control-attribution { background:rgba(15,17,23,.8)!important; color:var(--text-muted)!important; font-size:10px!important; }
+.leaflet-control-attribution a { color:var(--text-dim)!important; }
+.leaflet-popup-content-wrapper { background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius-sm); box-shadow:var(--shadow); }
+.leaflet-popup-tip { background:var(--surface); }
+.leaflet-popup-content { font-size:12px; font-family:'Inter',sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div class="onboard-overlay" id="onboard">
+  <div class="onboard-card">
+    <h2>Materials Analyzer</h2>
+    <p class="subtitle">Upload project data to analyze fiber routes, cable, and materials</p>
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-icon">&#8593;</div>
+      <div class="dropzone-text">Drop a file here or click to browse</div>
+      <div class="dropzone-sub">KMZ, KML, CSV, Excel, or PDF</div>
+      <input type="file" id="fileInput" accept=".kmz,.kml,.csv,.xlsx,.xls,.pdf" style="display:none">
+    </div>
+    <div class="onboard-formats">
+      <label class="btn">CSV<input type="file" accept=".csv" onchange="handleCSV(this.files[0])"></label>
+      <label class="btn">Excel<input type="file" accept=".xlsx,.xls" onchange="handleExcel(this.files[0])"></label>
+      <label class="btn">PDF<input type="file" accept=".pdf" onchange="handlePDF(this.files[0])"></label>
+      <button class="btn" onclick="openDropbox()">Dropbox</button>
+    </div>
+    <div style="margin-top:16px;color:var(--text-muted);font-size:12px;">Upload any KMZ from a fiber project — FTTH or Backbone auto-detected</div>
+  </div>
+</div>
+
+<!-- DROPBOX MODAL -->
+<div class="modal-bg" id="dbxModal">
+  <div class="modal">
+    <h3>Load from Dropbox</h3>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:12px;">Paste a Dropbox shared link:</p>
+    <input type="text" id="dbxUrl" placeholder="https://www.dropbox.com/s/...">
+    <div class="modal-actions">
+      <button class="btn" onclick="document.getElementById('dbxModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-accent" onclick="loadDropbox()">Load</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-brand"><span class="dot"></span>Materials Analyzer</div>
+  <div class="topnav-tabs">
+    <button class="topnav-tab active" onclick="switchView('map')">Map</button>
+    <button class="topnav-tab" onclick="switchView('dash')">Dashboard</button>
+  </div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-actions">
+    <label class="btn">KMZ<input type="file" accept=".kmz,.kml" onchange="handleKMZ(this.files[0]);this.value=''"></label>
+    <label class="btn">CSV<input type="file" accept=".csv" onchange="handleCSV(this.files[0]);this.value=''"></label>
+    <label class="btn">Excel<input type="file" accept=".xlsx,.xls" onchange="handleExcel(this.files[0]);this.value=''"></label>
+    <button class="btn" onclick="openDropbox()">Dropbox</button>
+    <button class="btn" onclick="doExport()">Export</button>
+  </div>
+</nav>
+
+<!-- PROJECT HEADER -->
+<div class="project-header">
+  <div class="project-info">
+    <input class="project-name" id="projName" value="Materials Analyzer" placeholder="Project Name">
+    <input class="project-sub" id="projSub" value="" placeholder="Subtitle / Company">
+  </div>
+  <div class="project-badges">
+    <span class="badge badge-ftth" id="badgeFTTH" style="display:none">FTTH</span>
+    <span class="badge badge-backbone" id="badgeBackbone" style="display:none">Backbone</span>
+  </div>
+</div>
+
+<!-- MAP VIEW -->
+<div class="view active" id="viewMap">
+  <div class="map-sidebar" id="sidebar">
+    <h4>Overview</h4>
+    <div class="stat"><span>Routes</span><span class="val" id="sRoutes">0</span></div>
+    <div class="stat"><span>Length</span><span class="val" id="sLength">0 mi</span></div>
+    <div class="stat"><span>Structures</span><span class="val" id="sHH">0</span></div>
+    <div class="stat"><span>Visible</span><span class="val" id="sVisible">0</span></div>
+    <div class="stat"><span>Type</span><span class="val" id="sType">--</span></div>
+    <div class="sep"></div>
+    <h4>Materials Summary</h4>
+    <div id="matsSummary"></div>
+    <div class="sep"></div>
+    <h4>Filter — Fiber / Cable</h4>
+    <div id="filterFiber"></div>
+    <div class="sep"></div>
+    <h4>Filter — Conduit</h4>
+    <div id="filterDuct"></div>
+    <div class="sep"></div>
+    <h4>Options</h4>
+    <div class="chk"><input type="checkbox" id="chkHH" onchange="toggleHH()"><label for="chkHH">Show structures</label></div>
+    <div class="chk"><input type="checkbox" id="chkSlack" checked onchange="recalcSidebar()"><label for="chkSlack">Include slack</label></div>
+    <div style="margin-top:4px">
+      <select class="sidebar-select" id="selSlack" onchange="recalcSidebar()">
+        <option value="50">50 ft slack/handhole</option>
+        <option value="100" selected>100 ft slack/handhole</option>
+        <option value="150">150 ft slack/handhole</option>
+      </select>
+    </div>
+    <div class="chk" style="margin-top:8px"><input type="checkbox" id="chkWaste" checked onchange="recalcSidebar()"><label for="chkWaste">Include waste buffer</label></div>
+    <div>
+      <select class="sidebar-select" id="selWaste" onchange="recalcSidebar()">
+        <option value="0.03">3% waste</option>
+        <option value="0.05" selected>5% waste</option>
+        <option value="0.10">10% waste</option>
+        <option value="0.15">15% waste</option>
+      </select>
+    </div>
+    <div class="sep"></div>
+    <h4>Legend</h4>
+    <div id="legend"></div>
+  </div>
+  <div class="map-wrap"><div id="map"></div></div>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div class="view" id="viewDash">
+  <div class="dash">
+    <div class="dash-section">
+      <div class="dash-section-title">Unit Costs<span class="line"></span></div>
+      <div class="cost-grid" id="unitCosts"></div>
+    </div>
+    <div class="dash-section">
+      <div class="dash-section-title">Materials by Quarter<span class="line"></span></div>
+      <div id="qtrMaterials"></div>
+    </div>
+    <div class="dash-section">
+      <div class="dash-section-title">Project Totals<span class="line"></span></div>
+      <div id="totalMaterials"></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS TOAST -->
+<div class="status-toast" id="toast"></div>
+
+<script>
+// ═══════════ STATE ═══════════
+let routes = { type:'FeatureCollection', features:[] };
+let structures = { type:'FeatureCollection', features:[] };
+let quarterly = [];
+let pType = 'ftth'; // 'ftth' | 'backbone'
+let map, routeLayerGroup, structureLayer;
+const PALETTE = ['#e74c3c','#74b9ff','#00cec9','#fdcb6e','#a29bfe','#1abc9c','#e67e22','#3498db','#e91e63','#00bcd4'];
+const FIBER_COLORS = {2:'#00cec9',4:'#00cec9',6:'#1abc9c',12:'#fdcb6e',24:'#74b9ff',48:'#a29bfe',72:'#ff7675',96:'#e67e22',144:'#e91e63',288:'#3498db',432:'#9b59b6'};
+
+// ═══════════ KMZ PARSER ═══════════
+async function parseKMZ(file){
+  toast('Parsing '+file.name+'...');
+  const ab = await file.arrayBuffer();
+  let kml;
+  if(file.name.endsWith('.kml')){
+    kml = new TextDecoder().decode(ab);
+  } else {
+    const zip = await JSZip.loadAsync(ab);
+    const kf = Object.keys(zip.files).find(n=>n.endsWith('.kml'));
+    if(!kf) throw new Error('No KML in KMZ');
+    kml = await zip.files[kf].async('string');
+  }
+
+  const feats=[], pts=[];
+  const pms = allPlacemarks(kml);
+  for(const pm of pms){
+    const name = tag(pm,'name')||'Unknown';
+    const coords = tag(pm,'coordinates');
+    if(!coords) continue;
+
+    // extended data
+    const ext={};
+    for(const m of pm.matchAll(/<SimpleData name="([^"]*)">(.*?)<\/SimpleData>/gs))
+      ext[m[1].toLowerCase()]=m[2].trim();
+
+    if(pm.includes('<LineString>')){
+      const cc = parseCoords(coords);
+      if(cc.length<2) continue;
+      const ft = haversine(cc);
+      const p = {name, route_type:'fiber', length_ft:Math.round(ft*100)/100};
+
+      // try name-based fiber count (Fort Worth style)
+      const fm = name.match(/MMT(\d+)/i)||name.match(/(\d+)\s*F(?:\b|-)/i)||name.match(/(\d+)\s*fiber/i);
+      if(fm){ let fc=parseInt(fm[1]); if(name.match(/MMT24\b/)&&fc===24)fc=432; p.fiber_count=fc; }
+      // conduit
+      const dm = name.match(/UGM(\d+)/i)||name.match(/(\d+)\s*way/i);
+      if(dm){ const u=parseInt(dm[1]); p.duct_ways={1:2,2:4,3:7}[u]||u; p.route_type='conduit'; }
+
+      feats.push({type:'Feature',properties:p,geometry:{type:'LineString',coordinates:cc}});
+    } else if(pm.includes('<Point>')){
+      const c=coords.trim().split(',');
+      if(c.length>=2){
+        const lon=parseFloat(c[0]),lat=parseFloat(c[1]);
+        if(!isNaN(lon)&&!isNaN(lat)){
+          const folder = folderOf(kml,pm);
+          const isCab = /cabinet|olt/i.test(name)||/cabinet|olt/i.test(folder);
+          pts.push({type:'Feature',properties:{name,type:isCab?'cabinet':'handhole'},geometry:{type:'Point',coordinates:[lon,lat]}});
+        }
+      }
+    }
+  }
+
+  // FTTH auto-classify unclassified fiber routes by length
+  const unclass = feats.filter(f=>!f.properties.fiber_count&&f.properties.route_type==='fiber');
+  if(unclass.length>50){
+    const sorted=[...unclass].sort((a,b)=>a.properties.length_ft-b.properties.length_ft);
+    const n=sorted.length;
+    const t1=sorted[Math.floor(n*.92)]?.properties.length_ft||656;
+    const t2=sorted[Math.floor(n*.98)]?.properties.length_ft||1638;
+    feats.forEach(f=>{
+      if(f.properties.fiber_count||f.properties.route_type!=='fiber') return;
+      const ft=f.properties.length_ft;
+      if(ft<=t1){f.properties.fiber_count=2;f.properties.cable_type='Drop';}
+      else if(ft<=t2){f.properties.fiber_count=24;f.properties.cable_type='Lateral/Feeder';}
+      else{f.properties.fiber_count=72;f.properties.cable_type='Distribution';}
+    });
+  }
+
+  routes={type:'FeatureCollection',features:feats};
+  structures={type:'FeatureCollection',features:pts};
+  detectType();
+  autoQuarterly();
+  toast(feats.length+' routes, '+pts.length+' structures loaded','success');
+  document.getElementById('projName').value=file.name.replace(/\.(kmz|kml)$/i,'');
+  render();
+}
+
+function allPlacemarks(kml){
+  const r=[];let i=0;
+  while(true){const s=kml.indexOf('<Placemark',i);if(s===-1)break;const e=kml.indexOf('</Placemark>',s);if(e===-1)break;r.push(kml.substring(s,e+12));i=e+12;}
+  return r;
+}
+function tag(t,n){const m=t.match(new RegExp(`<${n}[^>]*>(.*?)</${n}>`,'s'));return m?m[1].replace('<![CDATA[','').replace(']]>','').trim():null;}
+function parseCoords(t){return t.trim().split(/\s+/).map(c=>{const p=c.split(',');if(p.length>=2){const a=parseFloat(p[0]),b=parseFloat(p[1]);if(!isNaN(a)&&!isNaN(b))return[a,b];}return null}).filter(Boolean);}
+function haversine(cc){const R=20925524.9;let t=0;for(let i=0;i<cc.length-1;i++){const[a,b]=cc[i],[c,d]=cc[i+1];const dl=(d-b)*Math.PI/180,dn=(c-a)*Math.PI/180;const x=Math.sin(dl/2)**2+Math.cos(b*Math.PI/180)*Math.cos(d*Math.PI/180)*Math.sin(dn/2)**2;t+=R*2*Math.asin(Math.sqrt(x));}return t;}
+function folderOf(kml,pm){const i=kml.indexOf(pm);if(i===-1)return'';const before=kml.substring(Math.max(0,i-2000),i);const m=[...before.matchAll(/<name[^>]*>(.*?)<\/name>/gs)];return m.length?m[m.length-1][1]:'';  }
+
+// ═══════════ CSV / EXCEL / PDF ═══════════
+function handleCSV(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const lines=e.target.result.trim().split('\n');
+    if(lines.length<2)return toast('Empty CSV','error');
+    const hdr=lines[0].split(',').map(h=>h.trim());
+    const data=[];
+    for(let i=1;i<lines.length;i++){
+      const v=lines[i].split(',');if(!v[0]?.trim())continue;
+      const row={};hdr.forEach((h,j)=>{row[h]=v[j]?v[j].trim():'0';});
+      if(row.Quarter)data.push(row);
+    }
+    if(data.length){quarterly=data;toast(data.length+' quarters loaded','success');if(routes.features.length)render();}
+    else toast('No quarterly data found','error');
+  };
+  r.readAsText(file);
+}
+
+function handleExcel(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      if(data.length&&data[0].Quarter){
+        quarterly=data.map(r=>{const c={};Object.keys(r).forEach(k=>{c[k]=String(r[k]);});return c;});
+        toast(quarterly.length+' quarters from Excel','success');
+        if(routes.features.length)render();
+      } else toast('No "Quarter" column found','error');
+    }catch(err){toast('Excel error: '+err.message,'error');}
+  };
+  r.readAsArrayBuffer(file);
+}
+
+async function handlePDF(file){
+  if(!file)return;
+  toast('Reading PDF...');
+  try{
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+    let txt='';
+    for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i);const tc=await p.getTextContent();txt+=tc.items.map(x=>x.str).join(' ')+'\n';}
+    toast('PDF loaded ('+pdf.numPages+' pages)','success');
+  }catch(err){toast('PDF error: '+err.message,'error');}
+}
+
+function openDropbox(){document.getElementById('dbxModal').classList.add('open');}
+async function loadDropbox(){
+  let url=document.getElementById('dbxUrl').value.trim();if(!url)return;
+  url=url.replace('dl=0','dl=1').replace('www.dropbox.com','dl.dropboxusercontent.com');
+  document.getElementById('dbxModal').classList.remove('open');
+  toast('Loading from Dropbox...');
+  try{
+    const resp=await fetch(url);const blob=await resp.blob();
+    const name=url.split('/').pop().split('?')[0]||'file';
+    routeFile(new File([blob],name));
+  }catch(err){toast('Dropbox error: '+err.message,'error');}
+}
+
+function routeFile(f){
+  const n=f.name.toLowerCase();
+  if(n.endsWith('.kmz')||n.endsWith('.kml'))handleKMZ(f);
+  else if(n.endsWith('.csv'))handleCSV(f);
+  else if(n.endsWith('.xlsx')||n.endsWith('.xls'))handleExcel(f);
+  else if(n.endsWith('.pdf'))handlePDF(f);
+  else toast('Unsupported file','error');
+}
+function handleKMZ(f){parseKMZ(f).catch(e=>{toast('Parse error: '+e.message,'error');console.error(e);});}
+
+// ═══════════ TYPE DETECTION ═══════════
+function detectType(){
+  const fcs=new Set();
+  routes.features.forEach(f=>{if(f.properties.fiber_count)fcs.add(f.properties.fiber_count);});
+  const small=[2,4,6,8,12,24].some(x=>fcs.has(x));
+  const big=[288,432].some(x=>fcs.has(x));
+  const hasCable=routes.features.some(f=>f.properties.cable_type);
+  pType=(small&&!big)||hasCable?'ftth':'backbone';
+  document.getElementById('sType').textContent=pType==='ftth'?'FTTH':'Backbone';
+  document.getElementById('badgeFTTH').style.display=pType==='ftth'?'':'none';
+  document.getElementById('badgeBackbone').style.display=pType==='backbone'?'':'none';
+}
+
+// ═══════════ AUTO QUARTERLY ═══════════
+function autoQuarterly(){
+  const byFc={},byDuct={},byCable={};let total=0;
+  routes.features.forEach(f=>{
+    total+=f.properties.length_ft||0;
+    if(f.properties.route_type==='conduit'){const w=f.properties.duct_ways||7;byDuct[w]=(byDuct[w]||0)+(f.properties.length_ft||0);}
+    if(f.properties.fiber_count){const fc=f.properties.fiber_count;byFc[fc]=(byFc[fc]||0)+(f.properties.length_ft||0);}
+    if(f.properties.cable_type){const ct=f.properties.cable_type;byCable[ct]=(byCable[ct]||0)+(f.properties.length_ft||0);}
+  });
+  const row={'Quarter':'All Routes','Total Routes':routes.features.length.toString(),'Total Length (ft)':total.toFixed(2)};
+  Object.keys(byFc).sort((a,b)=>a-b).forEach(fc=>{row[fc+' fibers (ft)']=byFc[fc].toFixed(2);});
+  Object.keys(byDuct).sort((a,b)=>a-b).forEach(w=>{row[w+' way duct (ft)']=byDuct[w].toFixed(2);});
+  Object.keys(byCable).forEach(ct=>{row[ct+' Cable (ft)']=byCable[ct].toFixed(2);});
+  if(pType==='ftth'&&Object.keys(byDuct).length===0){
+    row['Microduct (ft)']=(total*0.35*0.6).toFixed(2);
+    row['Innerduct (ft)']=(total*0.35*0.4).toFixed(2);
+  }
+  quarterly=[row];
+  routes.features.forEach(f=>{f.properties.quarter='All Routes';});
+}
+
+function getCols(){
+  if(!quarterly.length)return{fibers:[],ducts:[],cables:[]};
+  const fibers=[],ducts=[],cables=[];
+  Object.keys(quarterly[0]).forEach(k=>{
+    let m=k.match(/^(\d+)\s*fibers?\s*\(ft\)$/i);if(m){fibers.push({key:k,count:+m[1],label:m[1]+'F'});return;}
+    m=k.match(/^(\d+)\s*way\s*duct\s*\(ft\)$/i);if(m){ducts.push({key:k,ways:+m[1],label:m[1]+'-way'});return;}
+    m=k.match(/^(.+?)\s*cable\s*\(ft\)$/i);if(m){cables.push({key:k,name:m[1].trim(),label:m[1].trim()});return;}
+    m=k.match(/^(microduct|innerduct)\s*\(ft\)$/i);if(m){ducts.push({key:k,ways:0,label:m[1]});return;}
+  });
+  fibers.sort((a,b)=>a.count-b.count);ducts.sort((a,b)=>a.ways-b.ways);
+  return{fibers,ducts,cables};
+}
+
+// ═══════════ UI HELPERS ═══════════
+function toast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='status-toast visible '+(type||'');
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.className='status-toast';},4000);
+}
+
+function switchView(v){
+  document.querySelectorAll('.topnav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(t=>t.classList.remove('active'));
+  if(v==='map'){
+    document.querySelector('.topnav-tab:nth-child(1)').classList.add('active');
+    document.getElementById('viewMap').classList.add('active');
+    if(map)map.invalidateSize();
+  } else {
+    document.querySelector('.topnav-tab:nth-child(2)').classList.add('active');
+    document.getElementById('viewDash').classList.add('active');
+    buildDash();
+  }
+}
+
+function fmt(n){return Math.round(n).toLocaleString();}
+function fmtC(n){return n===0?'$0':'$'+Math.round(n).toLocaleString();}
+
+// ═══════════ MAP ═══════════
+function initMap(){
+  map=L.map('map',{zoomControl:true}).setView([33.2,-96.7],10);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; OSM &copy; CARTO',maxZoom:19
+  }).addTo(map);
+  routeLayerGroup=L.layerGroup().addTo(map);
+}
+
+function render(){
+  document.getElementById('onboard').classList.add('hidden');
+  // stats
+  const totalFt=routes.features.reduce((s,f)=>s+(f.properties.length_ft||0),0);
+  document.getElementById('sRoutes').textContent=fmt(routes.features.length);
+  document.getElementById('sLength').textContent=fmt(totalFt/5280)+' mi';
+  document.getElementById('sHH').textContent=fmt(structures.features.length);
+
+  drawRoutes();
+  fitBounds();
+  buildSidebar();
+  buildDash();
+}
+
+function drawRoutes(){
+  routeLayerGroup.clearLayers();
+  if(structureLayer){map.removeLayer(structureLayer);structureLayer=null;}
+  let vis=0;
+  routes.features.forEach((f,i)=>{
+    if(!isVisible(f))return;
+    vis++;
+    const fc=f.properties.fiber_count;
+    const color=FIBER_COLORS[fc]||'#636e72';
+    L.geoJSON(f,{
+      style:{color,weight:3,opacity:.8},
+      onEachFeature:(_,l)=>{
+        const p=f.properties;
+        let pop=`<b>${p.name}</b><br>`;
+        if(p.cable_type)pop+=p.cable_type+' &middot; ';
+        if(p.fiber_count)pop+=p.fiber_count+'F &middot; ';
+        pop+=fmt(p.length_ft)+' ft';
+        l.bindPopup(pop);
+      }
+    }).addTo(routeLayerGroup);
+  });
+  document.getElementById('sVisible').textContent=fmt(vis);
+  if(document.getElementById('chkHH').checked)toggleHH();
+}
+
+function isVisible(f){
+  if(f.properties.route_type==='conduit'){
+    const cb=document.querySelector(`[data-duct="${f.properties.duct_ways}"]`);
+    if(cb&&!cb.checked)return false;
+  }
+  if(f.properties.fiber_count){
+    const cb=document.querySelector(`[data-fc="${f.properties.fiber_count}"]`);
+    if(cb&&!cb.checked)return false;
+  }
+  return true;
+}
+
+function fitBounds(){
+  if(!routes.features.length)return;
+  let a=90,b=-90,c=180,d=-180;
+  routes.features.forEach(f=>f.geometry.coordinates.forEach(p=>{if(p[1]<a)a=p[1];if(p[1]>b)b=p[1];if(p[0]<c)c=p[0];if(p[0]>d)d=p[0];}));
+  map.fitBounds([[a,c],[b,d]],{padding:[20,20]});
+}
+
+function toggleHH(){
+  const show=document.getElementById('chkHH').checked;
+  if(show&&structures.features.length){
+    if(structureLayer)map.removeLayer(structureLayer);
+    structureLayer=L.geoJSON(structures,{
+      pointToLayer:(f,ll)=>L.circleMarker(ll,{
+        radius:f.properties.type==='cabinet'?5:3,
+        fillColor:f.properties.type==='cabinet'?'#00cec9':'#fdcb6e',
+        color:'transparent',fillOpacity:.7
+      }),
+      onEachFeature:(f,l)=>l.bindPopup(`<b>${f.properties.name}</b><br>${f.properties.type}`)
+    }).addTo(map);
+  } else if(structureLayer){map.removeLayer(structureLayer);structureLayer=null;}
+}
+
+// ═══════════ SIDEBAR ═══════════
+function buildSidebar(){
+  recalcSidebar();
+  buildFilters();
+  buildLegend();
+}
+
+function recalcSidebar(){
+  const div=document.getElementById('matsSummary');div.innerHTML='';
+  const cols=getCols();
+  const slack=document.getElementById('chkSlack').checked?structures.features.length*parseInt(document.getElementById('selSlack').value):0;
+  const waste=document.getElementById('chkWaste').checked?parseFloat(document.getElementById('selWaste').value):0;
+  const rows=[];
+
+  // ducts
+  if(cols.ducts.length){
+    let tot=0;
+    cols.ducts.forEach(d=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[d.key]||0);});v*=(1+waste);tot+=v;rows.push({l:d.label,v:fmt(v)+' ft'});});
+    rows.push({l:'Total Duct',v:fmt(tot)+' ft',b:true});
+    rows.push({sep:true});
+  }
+
+  // cables/fibers
+  let totC=0;
+  if(cols.cables.length){
+    cols.cables.forEach(c=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[c.key]||0);});totC+=v;rows.push({l:c.label,v:fmt(v)+' ft'});});
+  }
+  if(cols.fibers.length){
+    cols.fibers.forEach(f=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[f.key]||0);});totC+=v;rows.push({l:f.label,v:fmt(v)+' ft'});});
+  }
+  if(slack){totC+=slack;rows.push({l:'Slack',v:fmt(slack)+' ft'});}
+  rows.push({l:'Total Cable',v:fmt(totC)+' ft',b:true});
+  rows.push({sep:true});
+
+  // structures
+  const cabs=structures.features.filter(f=>f.properties.type==='cabinet').length;
+  const hhs=structures.features.length-cabs;
+  if(cabs)rows.push({l:'OLT Cabinets',v:String(cabs)});
+  rows.push({l:'Handholes',v:fmt(hhs)});
+  rows.push({l:'Total Structures',v:fmt(structures.features.length),b:true});
+
+  rows.forEach(r=>{
+    if(r.sep){const d=document.createElement('div');d.className='sep';d.style.margin='6px 0';div.appendChild(d);return;}
+    const el=document.createElement('div');el.className='stat';
+    if(r.b)el.style.fontWeight='600';
+    el.innerHTML=`<span>${r.l}</span><span class="val">${r.v}</span>`;
+    div.appendChild(el);
+  });
+}
+
+function buildFilters(){
+  // fiber
+  const ffDiv=document.getElementById('filterFiber');ffDiv.innerHTML='';
+  const fcs=[...new Set(routes.features.filter(f=>f.properties.fiber_count).map(f=>f.properties.fiber_count))].sort((a,b)=>a-b);
+  fcs.forEach(fc=>{
+    const totalFt=routes.features.filter(f=>f.properties.fiber_count===fc).reduce((s,f)=>s+(f.properties.length_ft||0),0);
+    const ct=routes.features.find(f=>f.properties.fiber_count===fc&&f.properties.cable_type)?.properties.cable_type;
+    const lbl=ct?`${fc}F (${ct})`:`${fc}F`;
+    const el=document.createElement('div');el.className='chk';
+    el.innerHTML=`<input type="checkbox" checked data-fc="${fc}" onchange="drawRoutes()"><label>${lbl}</label><span class="ft">${fmt(totalFt)} ft</span>`;
+    ffDiv.appendChild(el);
+  });
+
+  // duct
+  const fdDiv=document.getElementById('filterDuct');fdDiv.innerHTML='';
+  const ducts=[...new Set(routes.features.filter(f=>f.properties.duct_ways).map(f=>f.properties.duct_ways))].sort((a,b)=>a-b);
+  if(ducts.length){
+    ducts.forEach(w=>{
+      const totalFt=routes.features.filter(f=>f.properties.duct_ways===w).reduce((s,f)=>s+(f.properties.length_ft||0),0);
+      const el=document.createElement('div');el.className='chk';
+      el.innerHTML=`<input type="checkbox" checked data-duct="${w}" onchange="drawRoutes()"><label>${w}-way</label><span class="ft">${fmt(totalFt)} ft</span>`;
+      fdDiv.appendChild(el);
+    });
+  } else {
+    fdDiv.innerHTML='<div style="color:var(--text-muted);font-size:11px">No conduit data</div>';
+  }
+}
+
+function buildLegend(){
+  const div=document.getElementById('legend');div.innerHTML='';
+  const fcs=[...new Set(routes.features.filter(f=>f.properties.fiber_count).map(f=>f.properties.fiber_count))].sort((a,b)=>a-b);
+  fcs.forEach(fc=>{
+    const ct=routes.features.find(f=>f.properties.fiber_count===fc&&f.properties.cable_type)?.properties.cable_type;
+    const lbl=ct?`${fc}F ${ct}`:`${fc}F`;
+    const el=document.createElement('div');el.className='legend-row';
+    el.innerHTML=`<div class="legend-dot" style="background:${FIBER_COLORS[fc]||'#636e72'}"></div>${lbl}`;
+    div.appendChild(el);
+  });
+}
+
+// ═══════════ DASHBOARD ═══════════
+function buildDash(){buildUnitCosts();buildQtrMaterials();buildTotalMaterials();}
+
+function buildUnitCosts(){
+  const grid=document.getElementById('unitCosts');grid.innerHTML='';
+  const cols=getCols();
+
+  if(pType==='ftth'){
+    // cable costs
+    const cableItems=[];
+    if(cols.cables.length)cols.cables.forEach(c=>cableItems.push({l:c.label,k:'cable_'+c.name.toLowerCase().replace(/[^a-z]/g,'_')}));
+    else cols.fibers.forEach(f=>cableItems.push({l:f.label,k:'fiber_'+f.count}));
+    if(cableItems.length)addCostCard(grid,'Cable ($/ft)',cableItems);
+
+    // duct
+    const ductItems=[];
+    if(cols.ducts.length)cols.ducts.forEach(d=>ductItems.push({l:d.label,k:'duct_'+d.label.toLowerCase().replace(/[^a-z0-9]/g,'_')}));
+    else ductItems.push({l:'Microduct',k:'duct_microduct'},{l:'Innerduct',k:'duct_innerduct'});
+    addCostCard(grid,'Conduit / Duct ($/ft)',ductItems);
+
+    addCostCard(grid,'Connectors ($/unit)',[{l:'SC/APC',k:'conn_scapc'},{l:'LC/APC',k:'conn_lcapc'},{l:'Pre-conn Drop',k:'conn_preconn'}]);
+    addCostCard(grid,'Splice & Closures ($/unit)',[{l:'Splice Closure',k:'splice_closure'},{l:'Splice Tray',k:'splice_tray'},{l:'Drop Terminal',k:'ftth_terminal'}]);
+    addCostCard(grid,'Structures ($/unit)',[{l:'Handhole',k:'hh_std'},{l:'Pedestal',k:'ftth_ped'},{l:'ONT Enclosure',k:'ftth_ont'},{l:'OLT Cabinet',k:'ftth_olt'}]);
+  } else {
+    const ductItems=[];
+    if(cols.ducts.length)cols.ducts.forEach(d=>ductItems.push({l:d.label,k:'duct_'+d.ways}));
+    else [{l:'2-way',k:'duct_2'},{l:'4-way',k:'duct_4'},{l:'7-way',k:'duct_7'}].forEach(x=>ductItems.push(x));
+    addCostCard(grid,'Conduit ($/ft)',ductItems);
+
+    const fiberItems=[];
+    if(cols.fibers.length)cols.fibers.forEach(f=>fiberItems.push({l:f.label,k:'fiber_'+f.count}));
+    else [48,96,144,288,432].forEach(fc=>fiberItems.push({l:fc+'F',k:'fiber_'+fc}));
+    addCostCard(grid,'Fiber ($/ft)',fiberItems);
+
+    addCostCard(grid,'Handholes ($/unit)',[{l:'HH Large',k:'hh_lg'},{l:'HH Standard',k:'hh_sm'}]);
+    addCostCard(grid,'Splice Cases ($/unit)',[{l:'450B',k:'sp_450b'},{l:'450C',k:'sp_450c'},{l:'450D',k:'sp_450d'}]);
+    addCostCard(grid,'Other ($/unit)',[{l:'Connectors',k:'oth_conn'},{l:'Ground Rods',k:'oth_gnd'}]);
+  }
+}
+
+function addCostCard(grid,title,items){
+  const card=document.createElement('div');card.className='card';
+  let h=`<div class="card-title">${title}</div>`;
+  items.forEach(it=>{
+    h+=`<div class="card-row"><span class="lbl">${it.l}</span><input type="number" id="c_${it.k}" value="0" min="0" step="0.01" onchange="buildQtrMaterials();buildTotalMaterials()"></div>`;
+  });
+  card.innerHTML=h;grid.appendChild(card);
+}
+
+function gc(k){const e=document.getElementById('c_'+k);return e?parseFloat(e.value)||0:0;}
+
+function buildQtrMaterials(){
+  const div=document.getElementById('qtrMaterials');div.innerHTML='';
+  const cols=getCols();
+  const waste=document.getElementById('chkWaste').checked?parseFloat(document.getElementById('selWaste').value):0;
+  const slack=document.getElementById('chkSlack').checked?parseInt(document.getElementById('selSlack').value):0;
+  const totalHH=structures.features.length;
+  const totalRoutes=quarterly.reduce((s,q)=>s+parseInt(q['Total Routes']||0),0);
+
+  quarterly.forEach(q=>{
+    const ratio=totalRoutes>0?parseInt(q['Total Routes']||0)/totalRoutes:1;
+    const hhQ=Math.round(totalHH*ratio);
+    const slackQ=slack*hhQ;
+
+    const qCard=document.createElement('div');qCard.className='quarter-card';
+    let h=`<div class="quarter-header">${q.Quarter}</div><div class="quarter-grid">`;
+    let budget=0;
+
+    if(pType==='ftth'){
+      // Cable
+      h+='<div class="card"><div class="card-title">Cable</div>';
+      let totC=0,totCC=0;
+      if(cols.cables.length){
+        cols.cables.forEach(c=>{
+          const v=parseFloat(q[c.key]||0);
+          const ck='cable_'+c.name.toLowerCase().replace(/[^a-z]/g,'_');
+          const cost=v*gc(ck);totC+=v;totCC+=cost;
+          h+=`<div class="card-row"><span class="lbl">${c.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;
+        });
+      } else {
+        cols.fibers.forEach(f=>{
+          const v=parseFloat(q[f.key]||0);const cost=v*gc('fiber_'+f.count);totC+=v;totCC+=cost;
+          h+=`<div class="card-row"><span class="lbl">${f.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;
+        });
+      }
+      if(slackQ){totC+=slackQ;h+=`<div class="card-row"><span class="lbl">Slack</span><span class="val">${fmt(slackQ)} ft</span><span class="cst">--</span></div>`;}
+      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totC)} ft</span><span class="cst">${fmtC(totCC)}</span></div></div>`;
+      budget+=totCC;
+
+      // Duct
+      h+='<div class="card"><div class="card-title">Conduit / Duct</div>';
+      let totD=0,totDC=0;
+      const ductKeys=cols.ducts.length?cols.ducts.map(d=>({label:d.label,key:d.key,ck:'duct_'+d.label.toLowerCase().replace(/[^a-z0-9]/g,'_')})):[{label:'Microduct',key:'Microduct (ft)',ck:'duct_microduct'},{label:'Innerduct',key:'Innerduct (ft)',ck:'duct_innerduct'}];
+      ductKeys.forEach(d=>{
+        let v=parseFloat(q[d.key]||0);v*=(1+waste);
+        const cost=v*gc(d.ck);totD+=v;totDC+=cost;
+        h+=`<div class="card-row"><span class="lbl">${d.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;
+      });
+      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totD)} ft</span><span class="cst">${fmtC(totDC)}</span></div></div>`;
+      budget+=totDC;
+
+      // Structures
+      const cabs=Math.round(structures.features.filter(f=>f.properties.type==='cabinet').length*ratio);
+      const hhs=hhQ-cabs;
+      const hhCost=hhs*gc('hh_std')+cabs*gc('ftth_olt');
+      h+='<div class="card"><div class="card-title">Structures</div>';
+      h+=`<div class="card-row"><span class="lbl">Handholes</span><span class="val">${fmt(hhs)}</span><span class="cst">${fmtC(hhs*gc('hh_std'))}</span></div>`;
+      h+=`<div class="card-row"><span class="lbl">OLT Cabinets</span><span class="val">${cabs}</span><span class="cst">${fmtC(cabs*gc('ftth_olt'))}</span></div>`;
+      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(hhQ)}</span><span class="cst">${fmtC(hhCost)}</span></div></div>`;
+      budget+=hhCost;
+
+      // Connectors
+      h+=hardwareCard('Connectors',[{l:'SC/APC',k:'conn_scapc',n:0},{l:'LC/APC',k:'conn_lcapc',n:0},{l:'Pre-conn',k:'conn_preconn',n:0}]);
+      // Splice
+      h+=hardwareCard('Splice & Closures',[{l:'Closure',k:'splice_closure',n:0},{l:'Tray',k:'splice_tray',n:0},{l:'Terminal',k:'ftth_terminal',n:0}]);
+
+    } else {
+      // Backbone: Conduit
+      h+='<div class="card"><div class="card-title">Conduit</div>';
+      let totD=0,totDC=0;
+      cols.ducts.forEach(d=>{
+        let v=parseFloat(q[d.key]||0);v*=(1+waste);
+        const cost=v*gc('duct_'+d.ways);totD+=v;totDC+=cost;
+        h+=`<div class="card-row"><span class="lbl">${d.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;
+      });
+      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totD)} ft</span><span class="cst">${fmtC(totDC)}</span></div></div>`;
+      budget+=totDC;
+
+      // Fiber
+      h+='<div class="card"><div class="card-title">Fiber</div>';
+      let totF=0,totFC=0;
+      cols.fibers.forEach(f=>{
+        const v=parseFloat(q[f.key]||0);const cost=v*gc('fiber_'+f.count);totF+=v;totFC+=cost;
+        h+=`<div class="card-row"><span class="lbl">${f.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;
+      });
+      if(slackQ){totF+=slackQ;h+=`<div class="card-row"><span class="lbl">Slack</span><span class="val">${fmt(slackQ)} ft</span><span class="cst">--</span></div>`;}
+      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totF)} ft</span><span class="cst">${fmtC(totFC)}</span></div></div>`;
+      budget+=totFC;
+
+      // HH
+      const hhLg=Math.round(totalHH*.0075);
+      const hhSm=hhQ-(hhLg>0?hhLg:0);
+      const hhCost=hhLg*gc('hh_lg')+hhSm*gc('hh_sm');
+      h+='<div class="card"><div class="card-title">Handholes</div>';
+      h+=`<div class="card-row"><span class="lbl">Large</span><span class="val">${hhLg}</span><span class="cst">${fmtC(hhLg*gc('hh_lg'))}</span></div>`;
+      h+=`<div class="card-row"><span class="lbl">Standard</span><span class="val">${fmt(hhSm)}</span><span class="cst">${fmtC(hhSm*gc('hh_sm'))}</span></div>`;
+      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(hhQ)}</span><span class="cst">${fmtC(hhCost)}</span></div></div>`;
+      budget+=hhCost;
+
+      h+=hardwareCard('Splice Cases',[{l:'450B',k:'sp_450b',n:0},{l:'450C',k:'sp_450c',n:0},{l:'450D',k:'sp_450d',n:0}]);
+    }
+
+    h+='</div>';
+    qCard.innerHTML=h;div.appendChild(qCard);
+
+    const bar=document.createElement('div');bar.className='budget-bar';
+    bar.innerHTML=`<span class="budget-label">Quarter Budget</span><span class="budget-amount">${fmtC(budget)}</span>`;
+    div.appendChild(bar);
+  });
+}
+
+function hardwareCard(title,items){
+  let h=`<div class="card"><div class="card-title">${title}</div>`;
+  let tot=0,totC=0;
+  items.forEach(it=>{const c=it.n*gc(it.k);tot+=it.n;totC+=c;h+=`<div class="card-row"><span class="lbl">${it.l}</span><span class="val">${it.n}</span><span class="cst">${fmtC(c)}</span></div>`;});
+  h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${tot}</span><span class="cst">${fmtC(totC)}</span></div></div>`;
+  return h;
+}
+
+function buildTotalMaterials(){
+  const div=document.getElementById('totalMaterials');div.innerHTML='';
+  const cols=getCols();
+  const waste=document.getElementById('chkWaste').checked?parseFloat(document.getElementById('selWaste').value):0;
+  const slack=document.getElementById('chkSlack').checked?structures.features.length*parseInt(document.getElementById('selSlack').value):0;
+  const totalHH=structures.features.length;
+
+  const section=document.createElement('div');section.className='quarter-card';
+  let h='<div class="quarter-grid">';
+  let budget=0;
+
+  if(pType==='ftth'){
+    h+='<div class="card"><div class="card-title">Total Cable</div>';
+    let totC=0,totCC=0;
+    if(cols.cables.length){
+      cols.cables.forEach(c=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[c.key]||0);});const ck='cable_'+c.name.toLowerCase().replace(/[^a-z]/g,'_');const cost=v*gc(ck);totC+=v;totCC+=cost;h+=`<div class="card-row"><span class="lbl">${c.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
+    } else {
+      cols.fibers.forEach(f=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[f.key]||0);});const cost=v*gc('fiber_'+f.count);totC+=v;totCC+=cost;h+=`<div class="card-row"><span class="lbl">${f.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
+    }
+    if(slack){totC+=slack;h+=`<div class="card-row"><span class="lbl">Slack</span><span class="val">${fmt(slack)} ft</span><span class="cst">--</span></div>`;}
+    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totC)} ft</span><span class="cst">${fmtC(totCC)}</span></div></div>`;
+    budget+=totCC;
+
+    h+='<div class="card"><div class="card-title">Total Conduit / Duct</div>';
+    let totD=0,totDC=0;
+    const ductKeys=cols.ducts.length?cols.ducts.map(d=>({label:d.label,key:d.key,ck:'duct_'+d.label.toLowerCase().replace(/[^a-z0-9]/g,'_')})):[{label:'Microduct',key:'Microduct (ft)',ck:'duct_microduct'},{label:'Innerduct',key:'Innerduct (ft)',ck:'duct_innerduct'}];
+    ductKeys.forEach(d=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[d.key]||0);});v*=(1+waste);const cost=v*gc(d.ck);totD+=v;totDC+=cost;h+=`<div class="card-row"><span class="lbl">${d.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
+    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totD)} ft</span><span class="cst">${fmtC(totDC)}</span></div></div>`;
+    budget+=totDC;
+
+    const cabs=structures.features.filter(f=>f.properties.type==='cabinet').length;
+    const hhs=totalHH-cabs;
+    const hhCost=hhs*gc('hh_std')+cabs*gc('ftth_olt');
+    h+='<div class="card"><div class="card-title">Total Structures</div>';
+    h+=`<div class="card-row"><span class="lbl">Handholes</span><span class="val">${fmt(hhs)}</span><span class="cst">${fmtC(hhs*gc('hh_std'))}</span></div>`;
+    h+=`<div class="card-row"><span class="lbl">OLT Cabinets</span><span class="val">${cabs}</span><span class="cst">${fmtC(cabs*gc('ftth_olt'))}</span></div>`;
+    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totalHH)}</span><span class="cst">${fmtC(hhCost)}</span></div></div>`;
+    budget+=hhCost;
+
+    h+=hardwareCard('Total Connectors',[{l:'SC/APC',k:'conn_scapc',n:0},{l:'LC/APC',k:'conn_lcapc',n:0},{l:'Pre-conn',k:'conn_preconn',n:0}]);
+    h+=hardwareCard('Total Splice',[{l:'Closure',k:'splice_closure',n:0},{l:'Tray',k:'splice_tray',n:0},{l:'Terminal',k:'ftth_terminal',n:0}]);
+
+  } else {
+    h+='<div class="card"><div class="card-title">Total Conduit</div>';
+    let totD=0,totDC=0;
+    cols.ducts.forEach(d=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[d.key]||0);});v*=(1+waste);const cost=v*gc('duct_'+d.ways);totD+=v;totDC+=cost;h+=`<div class="card-row"><span class="lbl">${d.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
+    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totD)} ft</span><span class="cst">${fmtC(totDC)}</span></div></div>`;
+    budget+=totDC;
+
+    h+='<div class="card"><div class="card-title">Total Fiber</div>';
+    let totF=0,totFC=0;
+    cols.fibers.forEach(f=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[f.key]||0);});const cost=v*gc('fiber_'+f.count);totF+=v;totFC+=cost;h+=`<div class="card-row"><span class="lbl">${f.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
+    if(slack){totF+=slack;h+=`<div class="card-row"><span class="lbl">Slack</span><span class="val">${fmt(slack)} ft</span><span class="cst">--</span></div>`;}
+    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totF)} ft</span><span class="cst">${fmtC(totFC)}</span></div></div>`;
+    budget+=totFC;
+
+    const hhLg=Math.round(totalHH*.0075),hhSm=totalHH-hhLg;
+    const hhCost=hhLg*gc('hh_lg')+hhSm*gc('hh_sm');
+    h+='<div class="card"><div class="card-title">Total Handholes</div>';
+    h+=`<div class="card-row"><span class="lbl">Large</span><span class="val">${hhLg}</span><span class="cst">${fmtC(hhLg*gc('hh_lg'))}</span></div>`;
+    h+=`<div class="card-row"><span class="lbl">Standard</span><span class="val">${fmt(hhSm)}</span><span class="cst">${fmtC(hhSm*gc('hh_sm'))}</span></div>`;
+    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totalHH)}</span><span class="cst">${fmtC(hhCost)}</span></div></div>`;
+    budget+=hhCost;
+
+    h+=hardwareCard('Total Splice',[{l:'450B',k:'sp_450b',n:0},{l:'450C',k:'sp_450c',n:0},{l:'450D',k:'sp_450d',n:0}]);
+  }
+
+  h+='</div>';
+  section.innerHTML=h;div.appendChild(section);
+
+  const bar=document.createElement('div');bar.className='total-budget-bar';
+  bar.innerHTML=`<span class="budget-label">Total Project Budget</span><span class="budget-amount">${fmtC(budget)}</span>`;
+  div.appendChild(bar);
+}
+
+// ═══════════ EXPORT ═══════════
+function doExport(){
+  const data={routes,structures,quarterly,projectType:pType,projectName:document.getElementById('projName').value};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=(document.getElementById('projName').value||'project')+'-export.json';a.click();
+}
+
+// ═══════════ EVENTS ═══════════
+const dz=document.getElementById('dropzone');
+dz.addEventListener('click',()=>document.getElementById('fileInput').click());
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');if(e.dataTransfer.files[0])routeFile(e.dataTransfer.files[0]);});
+document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])routeFile(e.target.files[0]);});
+document.body.addEventListener('dragover',e=>e.preventDefault());
+document.body.addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files[0])routeFile(e.dataTransfer.files[0]);});
+// Generic tool — no demo data, upload any project KMZ
+
+// ═══════════ INIT ═══════════
+initMap();
+</script>
+</body>
+</html>
