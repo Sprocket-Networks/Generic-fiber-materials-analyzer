@@ -15,12 +15,37 @@ Single-page HTML application for analyzing and comparing fiber optic materials f
 ## Key Features
 - Light theme with CSS variables for easy theming
 - Multi-file upload queue (batch files before processing)
-- Editable material quantities in dashboard
+- **Comprehensive materials catalog**: 150+ pre-loaded FTTX materials across 10 categories
+- Editable quantities AND unit costs in dashboard — extended costs auto-calculate
+- Category subtotals and grand total budget
+- "Hide zero-quantity items" toggle to focus on active materials
+- Collapsible category sections
 - Three views: Map, Dashboard, Compare Sources
 - Per-source data tracking with `dataSources[]` array
+- Smart material mapping: file-detected materials auto-map to catalog via `MATERIAL_ALIASES`
+- Unmapped materials from uploads go to a dynamic overflow category
 - Fiber route classification (FTTH vs Backbone)
 - Slack/waste buffer calculations
-- Export functionality
+- JSON export with full catalog data
+
+## Materials Catalog Categories
+1. **Fiber Cable** — 2F-864F aerial & underground, drop cable variants
+2. **Conduit / Microduct** — 5-18mm microduct, 1-24 way, HDPE 1"-4", innerduct
+3. **Structures / Enclosures** — Handholes Tier 1-6, vaults, FDH cabinets, splice enclosures
+4. **Splice Components** — Closures, trays, mechanical/fusion splices
+5. **Connectors / Terminals** — SC/LC/MPO connectors, drop terminals, MSTs, NAPs
+6. **Drop Materials** — Pre-cut drops, NIDs, ONT units, hardware
+7. **Aerial / Pole Hardware** — Strand, lashing, clamps, guys, brackets
+8. **Underground / Boring** — Bore, plow, trench, encasement, tape/wire
+9. **Testing / Passive** — Splitters 1x2-1x128, patch panels, WDM, attenuators
+10. **Restoration / Misc** — Ground rods, markers, permits, easements
+
+## Key Data Structures
+- `DEFAULT_MATERIALS` — immutable catalog constant with all items
+- `projectMaterials` — mutable runtime copy (deep clone of defaults)
+- `MATERIAL_ALIASES` — maps file-detected keys (e.g. "24F") to catalog IDs
+- `resolveToMaterialId(rawKey)` — fuzzy matching function for uploads
+- `mergeMaterialsIntoCatalog()` — merges all dataSources into projectMaterials
 
 ## Deployment
 - **Live URL**: https://generic-materials-analyzer.vercel.app

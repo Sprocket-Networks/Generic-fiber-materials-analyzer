@@ -44,7 +44,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-/* ─── TOP NAV ─── */
+/* TOP NAV */
 .topnav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -90,7 +90,7 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 .btn-accent:hover { background:#1d4ed8; border-color:#1d4ed8; }
 .btn-sm { padding:5px 10px; font-size:11px; }
 
-/* ─── PROJECT HEADER ─── */
+/* PROJECT HEADER */
 .project-header {
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
@@ -120,7 +120,7 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
   background:var(--purple-bg); color:var(--purple);
 }
 
-/* ─── ONBOARDING ─── */
+/* ONBOARDING */
 .onboard-overlay {
   position:fixed; inset:0; background:rgba(240,242,245,0.97);
   display:flex; align-items:center; justify-content:center; z-index:1000;
@@ -147,9 +147,7 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 .dropzone-sub { font-size:12px; color:var(--text-muted); margin-top:4px; }
 
 /* File Queue */
-.file-queue {
-  margin-top:20px; text-align:left;
-}
+.file-queue { margin-top:20px; text-align:left; }
 .file-queue-title {
   font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;
   color:var(--text-muted); margin-bottom:8px;
@@ -182,7 +180,15 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 .analyze-btn:hover { background:#1d4ed8; }
 .analyze-btn:disabled { background:var(--text-muted); cursor:not-allowed; }
 
-/* ─── STATUS ─── */
+.skip-btn {
+  margin-top:12px; padding:10px 24px; border-radius:var(--radius-sm);
+  font-size:13px; font-weight:500; cursor:pointer;
+  border:1px solid var(--border); background:var(--surface);
+  color:var(--text-dim); transition: all .15s; width:100%;
+}
+.skip-btn:hover { color:var(--text); border-color:var(--text-muted); background:var(--surface2); }
+
+/* STATUS */
 .status-toast {
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
   background:var(--surface); border:1px solid var(--border);
@@ -194,11 +200,11 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 .status-toast.error { border-color:var(--red); color:var(--red); }
 .status-toast.success { border-color:var(--green); color:var(--green); }
 
-/* ─── LAYOUT ─── */
+/* LAYOUT */
 .view { display:none; height:calc(100vh - 56px - 55px); }
 .view.active { display:flex; }
 
-/* ─── MAP VIEW ─── */
+/* MAP VIEW */
 .map-sidebar {
   width:280px; min-width:280px; background:var(--surface);
   border-right:1px solid var(--border); overflow-y:auto;
@@ -240,9 +246,9 @@ select.sidebar-select {
 .layer-btn.active { background:var(--accent); color:white; border-color:var(--accent); }
 .layer-btn:hover:not(.active) { background:var(--surface2); color:var(--text); }
 
-/* ─── DASHBOARD VIEW ─── */
+/* DASHBOARD VIEW */
 .dash { flex:1; overflow-y:auto; padding:24px; }
-.dash-section { margin-bottom:32px; }
+.dash-section { margin-bottom:28px; }
 .dash-section-title {
   font-size:14px; font-weight:600; color:var(--text);
   margin-bottom:14px; display:flex; align-items:center; gap:10px;
@@ -266,46 +272,16 @@ select.sidebar-select {
 .card-row .lbl { color:var(--text-dim); }
 .card-row .val { font-weight:600; font-variant-numeric:tabular-nums; color:var(--text); }
 .card-row .cst { color:var(--accent); font-weight:600; font-size:12px; font-variant-numeric:tabular-nums; }
-.card-row input[type="number"] {
-  width:80px; padding:4px 8px; background:var(--surface2); color:var(--text);
-  border:1px solid var(--border); border-radius:6px; text-align:right;
-  font-size:12px; font-family:inherit; transition:border-color .15s;
-}
-.card-row input[type="number"]:focus { border-color:var(--accent); outline:none; box-shadow:0 0 0 2px var(--accent-bg); }
 
 /* Editable qty */
 .editable-qty {
-  width:72px; padding:3px 6px; background:var(--surface2); color:var(--text);
+  width:90px; padding:3px 6px; background:var(--surface2); color:var(--text);
   border:1px solid transparent; border-radius:4px; text-align:right;
   font-size:13px; font-family:inherit; font-weight:600; font-variant-numeric:tabular-nums;
   transition:border-color .15s;
 }
 .editable-qty:hover { border-color:var(--border); }
 .editable-qty:focus { border-color:var(--accent); outline:none; background:white; box-shadow:0 0 0 2px var(--accent-bg); }
-
-.card-total {
-  border-top:1px solid var(--border-light); margin-top:6px; padding-top:6px;
-  font-weight:600;
-}
-
-.quarter-card {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--radius); padding:20px; margin-bottom:12px;
-  box-shadow:var(--shadow);
-}
-.quarter-header {
-  font-size:16px; font-weight:700; color:var(--accent); margin-bottom:14px;
-}
-.quarter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
-
-.budget-bar {
-  background: linear-gradient(135deg, var(--accent), #7c3aed);
-  border-radius:var(--radius); padding:14px 20px; margin-bottom:20px;
-  display:flex; justify-content:space-between; align-items:center;
-  color:white;
-}
-.budget-bar .budget-label { font-size:13px; opacity:.85; }
-.budget-bar .budget-amount { font-size:22px; font-weight:700; }
 
 .total-budget-bar {
   background: linear-gradient(135deg, #1e293b, #334155);
@@ -317,8 +293,49 @@ select.sidebar-select {
 .total-budget-bar .budget-label { font-size:14px; }
 .total-budget-bar .budget-amount { font-size:26px; font-weight:700; }
 
-/* ─── COMPARISON VIEW ─── */
-.compare-section { margin-bottom:24px; }
+/* CATALOG TABLE */
+.cat-table {
+  width:100%; border-collapse:collapse; font-size:13px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+  margin-bottom:4px;
+}
+.cat-table th {
+  background:var(--surface2); font-size:11px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted);
+  padding:8px 12px; text-align:left; border-bottom:1px solid var(--border);
+}
+.cat-table td {
+  padding:5px 12px; border-bottom:1px solid var(--border-light);
+  font-variant-numeric:tabular-nums;
+}
+.cat-table tr:last-child td { border-bottom:none; }
+.cat-table tr:hover td { background:var(--surface2); }
+.cat-table tr.has-qty td { background:var(--accent-bg); }
+.cat-table tr.has-qty:hover td { background:rgba(37,99,235,0.12); }
+.cat-table .row-label { font-weight:500; color:var(--text); }
+.cat-table .unit-col { text-align:center; color:var(--text-muted); font-size:11px; }
+.cat-table .ext-col { text-align:right; font-weight:600; color:var(--accent); }
+.cat-table tfoot td {
+  background:var(--surface2); font-weight:700; border-top:2px solid var(--border);
+}
+
+.cat-header {
+  cursor:pointer; user-select:none; display:flex; align-items:center; gap:10px;
+}
+.cat-header:hover { opacity:.8; }
+.cat-toggle-icon { font-size:10px; transition:transform .2s; }
+.cat-toggle-icon.collapsed { transform:rotate(-90deg); }
+
+.filter-bar {
+  display:flex; gap:12px; align-items:center; margin-bottom:20px;
+  padding:10px 16px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-sm); box-shadow:var(--shadow);
+}
+.filter-bar label { font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
+.filter-bar input[type="checkbox"] { accent-color:var(--accent); }
+
+/* COMPARISON VIEW */
 .compare-table {
   width:100%; border-collapse:collapse; font-size:13px;
   background:var(--surface); border:1px solid var(--border);
@@ -346,7 +363,7 @@ select.sidebar-select {
   border-radius:4px; font-size:10px; font-weight:600; text-transform:uppercase;
 }
 
-/* ─── MODAL ─── */
+/* MODAL */
 .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .modal-bg.open { display:flex; }
 .modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; max-width:440px; width:90%; box-shadow:var(--shadow-md); }
@@ -364,7 +381,7 @@ select.sidebar-select {
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
 ::-webkit-scrollbar-thumb:hover { background:var(--text-muted); }
 
-/* leaflet overrides for light theme */
+/* leaflet overrides */
 .leaflet-control-zoom a {
   background:var(--surface)!important; color:var(--text)!important;
   border-color:var(--border)!important;
@@ -387,7 +404,7 @@ select.sidebar-select {
 <div class="onboard-overlay" id="onboard">
   <div class="onboard-card">
     <h2>Fiber - FTTX Materials Analyzer</h2>
-    <p class="subtitle">Upload multiple data sources to analyze and compare fiber materials</p>
+    <p class="subtitle">Upload data sources to analyze fiber materials, or start with the full catalog</p>
     <div class="dropzone" id="dropzone">
       <div class="dropzone-icon">&#8593;</div>
       <div class="dropzone-text">Drop files here or click to browse</div>
@@ -405,7 +422,8 @@ select.sidebar-select {
       <div class="file-queue-list" id="fileQueueList"></div>
     </div>
     <button class="analyze-btn" id="analyzeBtn" disabled onclick="processQueue()">Add files to begin</button>
-    <div style="margin-top:16px;color:var(--text-muted);font-size:12px;">Add KMZ for routes + Excel/CSV/PDF for additional materials &mdash; compare across sources</div>
+    <button class="skip-btn" onclick="skipToEmptyCatalog()">Skip &mdash; start with empty materials catalog</button>
+    <div style="margin-top:16px;color:var(--text-muted);font-size:12px;">150+ FTTX materials pre-loaded &mdash; upload files to auto-populate quantities or edit manually</div>
   </div>
 </div>
 
@@ -508,18 +526,9 @@ select.sidebar-select {
 <!-- DASHBOARD VIEW -->
 <div class="view" id="viewDash">
   <div class="dash">
-    <div class="dash-section">
-      <div class="dash-section-title">Unit Costs<span class="line"></span></div>
-      <div class="cost-grid" id="unitCosts"></div>
-    </div>
-    <div class="dash-section">
-      <div class="dash-section-title">Materials by Quarter<span class="line"></span></div>
-      <div id="qtrMaterials"></div>
-    </div>
-    <div class="dash-section">
-      <div class="dash-section-title">Project Totals<span class="line"></span></div>
-      <div id="totalMaterials"></div>
-    </div>
+    <div id="dashFilterBar"></div>
+    <div id="materialsCatalog"></div>
+    <div id="budgetSummary"></div>
   </div>
 </div>
 
@@ -539,341 +548,481 @@ select.sidebar-select {
 <div class="status-toast" id="toast"></div>
 
 <script>
-// ═══════════ STATE ═══════════
+// =========== STATE ===========
 let routes = { type:'FeatureCollection', features:[] };
 let structures = { type:'FeatureCollection', features:[] };
 let quarterly = [];
 let pType = 'ftth';
 let map, routeLayerGroup, structureLayer, currentTileLayer;
 let fileQueue = [];
-let dataSources = []; // {name, type, routes, structures, quarterly, materials}
+let dataSources = [];
+let hideZeros = true;
+let collapsedCats = {};
 const PALETTE = ['#e74c3c','#2563eb','#059669','#d97706','#7c3aed','#0d9488','#e67e22','#3498db','#e91e63','#00bcd4'];
-const FIBER_COLORS = {2:'#059669',4:'#059669',6:'#0d9488',12:'#d97706',24:'#2563eb',48:'#7c3aed',72:'#dc2626',96:'#e67e22',144:'#e91e63',288:'#3498db',432:'#9b59b6'};
+const FIBER_COLORS = {2:'#059669',4:'#059669',6:'#0d9488',12:'#d97706',24:'#2563eb',48:'#7c3aed',72:'#dc2626',96:'#e67e22',144:'#e91e63',288:'#3498db',432:'#9b59b6',576:'#e74c3c',864:'#00bcd4'};
 
 const TILES = {
-  terrain: {
-    url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-    attr:'Esri, HERE, Garmin, OpenStreetMap contributors'
+  terrain:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',attr:'Esri, HERE, Garmin, OSM contributors'},
+  street:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',attr:'&copy; OpenStreetMap contributors'},
+  satellite:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',attr:'Esri, Maxar, Earthstar Geographics'},
+  topo:{url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',attr:'&copy; OpenStreetMap, SRTM | &copy; OpenTopoMap'}
+};
+
+// =========== DEFAULT MATERIALS CATALOG ===========
+const DEFAULT_MATERIALS = {
+  fiber_cable: {
+    label:'Fiber Cable', color:'var(--blue)', items:[
+      {id:'micro_2f_aerial',name:'Micro Fiber 2F (Aerial)',unit:'ft',defaultCost:0.15,qty:0},
+      {id:'micro_4f_aerial',name:'Micro Fiber 4F (Aerial)',unit:'ft',defaultCost:0.18,qty:0},
+      {id:'micro_6f_aerial',name:'Micro Fiber 6F (Aerial)',unit:'ft',defaultCost:0.20,qty:0},
+      {id:'micro_8f_aerial',name:'Micro Fiber 8F (Aerial)',unit:'ft',defaultCost:0.22,qty:0},
+      {id:'micro_12f_aerial',name:'Micro Fiber 12F (Aerial)',unit:'ft',defaultCost:0.25,qty:0},
+      {id:'micro_24f_aerial',name:'Micro Fiber 24F (Aerial)',unit:'ft',defaultCost:0.35,qty:0},
+      {id:'micro_48f_aerial',name:'Micro Fiber 48F (Aerial)',unit:'ft',defaultCost:0.55,qty:0},
+      {id:'micro_72f_aerial',name:'Micro Fiber 72F (Aerial)',unit:'ft',defaultCost:0.75,qty:0},
+      {id:'micro_96f_aerial',name:'Micro Fiber 96F (Aerial)',unit:'ft',defaultCost:0.95,qty:0},
+      {id:'micro_144f_aerial',name:'Micro Fiber 144F (Aerial)',unit:'ft',defaultCost:1.25,qty:0},
+      {id:'micro_192f_aerial',name:'Micro Fiber 192F (Aerial)',unit:'ft',defaultCost:1.55,qty:0},
+      {id:'micro_216f_aerial',name:'Micro Fiber 216F (Aerial)',unit:'ft',defaultCost:1.70,qty:0},
+      {id:'micro_288f_aerial',name:'Micro Fiber 288F (Aerial)',unit:'ft',defaultCost:2.10,qty:0},
+      {id:'micro_432f_aerial',name:'Micro Fiber 432F (Aerial)',unit:'ft',defaultCost:3.00,qty:0},
+      {id:'micro_576f_aerial',name:'Micro Fiber 576F (Aerial)',unit:'ft',defaultCost:3.75,qty:0},
+      {id:'micro_864f_aerial',name:'Micro Fiber 864F (Aerial)',unit:'ft',defaultCost:5.25,qty:0},
+      {id:'micro_2f_ug',name:'Micro Fiber 2F (Underground)',unit:'ft',defaultCost:0.20,qty:0},
+      {id:'micro_4f_ug',name:'Micro Fiber 4F (Underground)',unit:'ft',defaultCost:0.24,qty:0},
+      {id:'micro_6f_ug',name:'Micro Fiber 6F (Underground)',unit:'ft',defaultCost:0.26,qty:0},
+      {id:'micro_8f_ug',name:'Micro Fiber 8F (Underground)',unit:'ft',defaultCost:0.28,qty:0},
+      {id:'micro_12f_ug',name:'Micro Fiber 12F (Underground)',unit:'ft',defaultCost:0.32,qty:0},
+      {id:'micro_24f_ug',name:'Micro Fiber 24F (Underground)',unit:'ft',defaultCost:0.45,qty:0},
+      {id:'micro_48f_ug',name:'Micro Fiber 48F (Underground)',unit:'ft',defaultCost:0.70,qty:0},
+      {id:'micro_72f_ug',name:'Micro Fiber 72F (Underground)',unit:'ft',defaultCost:0.95,qty:0},
+      {id:'micro_96f_ug',name:'Micro Fiber 96F (Underground)',unit:'ft',defaultCost:1.20,qty:0},
+      {id:'micro_144f_ug',name:'Micro Fiber 144F (Underground)',unit:'ft',defaultCost:1.55,qty:0},
+      {id:'micro_192f_ug',name:'Micro Fiber 192F (Underground)',unit:'ft',defaultCost:1.85,qty:0},
+      {id:'micro_216f_ug',name:'Micro Fiber 216F (Underground)',unit:'ft',defaultCost:2.00,qty:0},
+      {id:'micro_288f_ug',name:'Micro Fiber 288F (Underground)',unit:'ft',defaultCost:2.50,qty:0},
+      {id:'micro_432f_ug',name:'Micro Fiber 432F (Underground)',unit:'ft',defaultCost:3.50,qty:0},
+      {id:'micro_576f_ug',name:'Micro Fiber 576F (Underground)',unit:'ft',defaultCost:4.25,qty:0},
+      {id:'micro_864f_ug',name:'Micro Fiber 864F (Underground)',unit:'ft',defaultCost:5.75,qty:0},
+      {id:'drop_flat',name:'Drop Cable - Flat',unit:'ft',defaultCost:0.12,qty:0},
+      {id:'drop_round',name:'Drop Cable - Round',unit:'ft',defaultCost:0.14,qty:0},
+      {id:'drop_toneable',name:'Drop Cable - Toneable',unit:'ft',defaultCost:0.18,qty:0},
+      {id:'drop_armored',name:'Drop Cable - Armored',unit:'ft',defaultCost:0.25,qty:0},
+    ]
   },
-  street: {
-    url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attr:'&copy; OpenStreetMap contributors'
+  conduit_microduct: {
+    label:'Conduit / Microduct', color:'var(--orange)', items:[
+      {id:'microduct_5mm',name:'Microduct 5mm',unit:'ft',defaultCost:0.15,qty:0},
+      {id:'microduct_7mm',name:'Microduct 7mm',unit:'ft',defaultCost:0.18,qty:0},
+      {id:'microduct_10mm',name:'Microduct 10mm',unit:'ft',defaultCost:0.22,qty:0},
+      {id:'microduct_12mm',name:'Microduct 12mm',unit:'ft',defaultCost:0.25,qty:0},
+      {id:'microduct_14mm',name:'Microduct 14mm',unit:'ft',defaultCost:0.28,qty:0},
+      {id:'microduct_16mm',name:'Microduct 16mm',unit:'ft',defaultCost:0.32,qty:0},
+      {id:'microduct_18mm',name:'Microduct 18mm',unit:'ft',defaultCost:0.36,qty:0},
+      {id:'multiway_1way',name:'Multi-way Microduct 1-way',unit:'ft',defaultCost:0.30,qty:0},
+      {id:'multiway_2way',name:'Multi-way Microduct 2-way',unit:'ft',defaultCost:0.55,qty:0},
+      {id:'multiway_3way',name:'Multi-way Microduct 3-way',unit:'ft',defaultCost:0.75,qty:0},
+      {id:'multiway_4way',name:'Multi-way Microduct 4-way',unit:'ft',defaultCost:0.95,qty:0},
+      {id:'multiway_7way',name:'Multi-way Microduct 7-way',unit:'ft',defaultCost:1.50,qty:0},
+      {id:'multiway_12way',name:'Multi-way Microduct 12-way',unit:'ft',defaultCost:2.25,qty:0},
+      {id:'multiway_19way',name:'Multi-way Microduct 19-way',unit:'ft',defaultCost:3.50,qty:0},
+      {id:'multiway_24way',name:'Multi-way Microduct 24-way',unit:'ft',defaultCost:4.25,qty:0},
+      {id:'hdpe_1in',name:'HDPE Conduit 1"',unit:'ft',defaultCost:0.45,qty:0},
+      {id:'hdpe_1_25in',name:'HDPE Conduit 1.25"',unit:'ft',defaultCost:0.55,qty:0},
+      {id:'hdpe_1_5in',name:'HDPE Conduit 1.5"',unit:'ft',defaultCost:0.65,qty:0},
+      {id:'hdpe_2in',name:'HDPE Conduit 2"',unit:'ft',defaultCost:0.85,qty:0},
+      {id:'hdpe_3in',name:'HDPE Conduit 3"',unit:'ft',defaultCost:1.40,qty:0},
+      {id:'hdpe_4in',name:'HDPE Conduit 4"',unit:'ft',defaultCost:1.95,qty:0},
+      {id:'innerduct_1in',name:'Innerduct 1"',unit:'ft',defaultCost:0.35,qty:0},
+      {id:'innerduct_1_25in',name:'Innerduct 1.25"',unit:'ft',defaultCost:0.42,qty:0},
+      {id:'flex_conduit',name:'Flexible Conduit',unit:'ft',defaultCost:0.60,qty:0},
+    ]
   },
-  satellite: {
-    url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attr:'Esri, Maxar, Earthstar Geographics'
+  structures_enclosures: {
+    label:'Structures / Enclosures', color:'var(--green)', items:[
+      {id:'hh_11x18',name:'Handhole 11x18 (Tier 1)',unit:'ea',defaultCost:350,qty:0},
+      {id:'hh_17x30',name:'Handhole 17x30 (Tier 2)',unit:'ea',defaultCost:550,qty:0},
+      {id:'hh_24x36',name:'Handhole 24x36 (Tier 3)',unit:'ea',defaultCost:850,qty:0},
+      {id:'hh_30x48',name:'Handhole 30x48 (Tier 4)',unit:'ea',defaultCost:1200,qty:0},
+      {id:'hh_36x60',name:'Handhole 36x60 (Tier 5)',unit:'ea',defaultCost:1800,qty:0},
+      {id:'hh_48x72',name:'Handhole 48x72 (Tier 6)',unit:'ea',defaultCost:2500,qty:0},
+      {id:'vault_small',name:'Vault - Small',unit:'ea',defaultCost:3500,qty:0},
+      {id:'vault_medium',name:'Vault - Medium',unit:'ea',defaultCost:5500,qty:0},
+      {id:'vault_large',name:'Vault - Large',unit:'ea',defaultCost:8500,qty:0},
+      {id:'pedestal_sm',name:'Pedestal - Small',unit:'ea',defaultCost:250,qty:0},
+      {id:'pedestal_lg',name:'Pedestal - Large',unit:'ea',defaultCost:450,qty:0},
+      {id:'fdh_72',name:'FDH Cabinet 72-port',unit:'ea',defaultCost:2500,qty:0},
+      {id:'fdh_144',name:'FDH Cabinet 144-port',unit:'ea',defaultCost:3500,qty:0},
+      {id:'fdh_288',name:'FDH Cabinet 288-port',unit:'ea',defaultCost:5000,qty:0},
+      {id:'fdh_432',name:'FDH Cabinet 432-port',unit:'ea',defaultCost:7000,qty:0},
+      {id:'fdh_576',name:'FDH Cabinet 576-port',unit:'ea',defaultCost:9000,qty:0},
+      {id:'splice_enc_aerial',name:'Splice Enclosure - Aerial',unit:'ea',defaultCost:180,qty:0},
+      {id:'splice_enc_ug',name:'Splice Enclosure - Underground',unit:'ea',defaultCost:220,qty:0},
+      {id:'splice_enc_inline',name:'Splice Enclosure - In-line',unit:'ea',defaultCost:160,qty:0},
+      {id:'ont_enclosure',name:'ONT Enclosure',unit:'ea',defaultCost:85,qty:0},
+      {id:'olt_cabinet',name:'OLT Cabinet',unit:'ea',defaultCost:15000,qty:0},
+      {id:'aerial_closure',name:'Aerial Closure',unit:'ea',defaultCost:175,qty:0},
+      {id:'pole_mount_enc',name:'Pole-mount Enclosure',unit:'ea',defaultCost:200,qty:0},
+    ]
   },
-  topo: {
-    url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attr:'&copy; OpenStreetMap, SRTM | &copy; OpenTopoMap'
+  splice_components: {
+    label:'Splice Components', color:'var(--purple)', items:[
+      {id:'splice_closure_dome',name:'Splice Closure - Dome',unit:'ea',defaultCost:175,qty:0},
+      {id:'splice_closure_inline',name:'Splice Closure - In-line',unit:'ea',defaultCost:150,qty:0},
+      {id:'splice_closure_flat',name:'Splice Closure - Flat',unit:'ea',defaultCost:130,qty:0},
+      {id:'splice_tray_12f',name:'Splice Tray 12F',unit:'ea',defaultCost:12,qty:0},
+      {id:'splice_tray_24f',name:'Splice Tray 24F',unit:'ea',defaultCost:18,qty:0},
+      {id:'mechanical_splice',name:'Mechanical Splice',unit:'ea',defaultCost:8,qty:0},
+      {id:'fusion_splice',name:'Fusion Splice',unit:'per splice',defaultCost:25,qty:0},
+      {id:'splice_organizer',name:'Splice Organizer Tray',unit:'ea',defaultCost:15,qty:0},
+      {id:'heat_shrink',name:'Heat Shrink Protector',unit:'ea',defaultCost:2,qty:0},
+    ]
+  },
+  connectors_terminals: {
+    label:'Connectors / Terminals', color:'var(--teal)', items:[
+      {id:'conn_sc_apc',name:'SC/APC Connector',unit:'ea',defaultCost:4.50,qty:0},
+      {id:'conn_sc_upc',name:'SC/UPC Connector',unit:'ea',defaultCost:3.75,qty:0},
+      {id:'conn_lc_apc',name:'LC/APC Connector',unit:'ea',defaultCost:5.00,qty:0},
+      {id:'conn_lc_upc',name:'LC/UPC Connector',unit:'ea',defaultCost:4.25,qty:0},
+      {id:'conn_mpo_mtp',name:'MPO/MTP Connector',unit:'ea',defaultCost:35.00,qty:0},
+      {id:'preconn_drop',name:'Pre-connectorized Drop',unit:'ea',defaultCost:12.00,qty:0},
+      {id:'drop_term_2',name:'Drop Terminal 2-port',unit:'ea',defaultCost:45,qty:0},
+      {id:'drop_term_4',name:'Drop Terminal 4-port',unit:'ea',defaultCost:65,qty:0},
+      {id:'drop_term_8',name:'Drop Terminal 8-port',unit:'ea',defaultCost:95,qty:0},
+      {id:'drop_term_12',name:'Drop Terminal 12-port',unit:'ea',defaultCost:125,qty:0},
+      {id:'drop_term_16',name:'Drop Terminal 16-port',unit:'ea',defaultCost:155,qty:0},
+      {id:'mst_4',name:'MST 4-port',unit:'ea',defaultCost:85,qty:0},
+      {id:'mst_8',name:'MST 8-port',unit:'ea',defaultCost:135,qty:0},
+      {id:'mst_12',name:'MST 12-port',unit:'ea',defaultCost:185,qty:0},
+      {id:'mst_16',name:'MST 16-port',unit:'ea',defaultCost:235,qty:0},
+      {id:'nap',name:'Network Access Point (NAP)',unit:'ea',defaultCost:120,qty:0},
+      {id:'fdt',name:'Fiber Distribution Terminal',unit:'ea',defaultCost:200,qty:0},
+    ]
+  },
+  drop_materials: {
+    label:'Drop Materials (Last Mile)', color:'var(--accent)', items:[
+      {id:'drop_100ft',name:'Drop Cable 100ft',unit:'ea',defaultCost:15,qty:0},
+      {id:'drop_150ft',name:'Drop Cable 150ft',unit:'ea',defaultCost:22,qty:0},
+      {id:'drop_200ft',name:'Drop Cable 200ft',unit:'ea',defaultCost:28,qty:0},
+      {id:'drop_250ft',name:'Drop Cable 250ft',unit:'ea',defaultCost:35,qty:0},
+      {id:'drop_300ft',name:'Drop Cable 300ft',unit:'ea',defaultCost:42,qty:0},
+      {id:'drop_500ft',name:'Drop Cable 500ft',unit:'ea',defaultCost:65,qty:0},
+      {id:'nid',name:'NID (Network Interface Device)',unit:'ea',defaultCost:45,qty:0},
+      {id:'slack_loop',name:'Slack Loop',unit:'ea',defaultCost:3,qty:0},
+      {id:'p_hook',name:'P-hook / Cable Clip',unit:'ea',defaultCost:0.50,qty:0},
+      {id:'weather_head',name:'Weather Head',unit:'ea',defaultCost:12,qty:0},
+      {id:'ont_unit',name:'ONT Unit',unit:'ea',defaultCost:150,qty:0},
+    ]
+  },
+  aerial_pole: {
+    label:'Aerial / Pole Hardware', color:'var(--red)', items:[
+      {id:'strand_6m',name:'Strand 6M Messenger Wire',unit:'ft',defaultCost:0.10,qty:0},
+      {id:'strand_10m',name:'Strand 10M Messenger Wire',unit:'ft',defaultCost:0.14,qty:0},
+      {id:'strand_25m',name:'Strand 25M Messenger Wire',unit:'ft',defaultCost:0.22,qty:0},
+      {id:'lashing_wire',name:'Lashing Wire',unit:'ft',defaultCost:0.04,qty:0},
+      {id:'j_hook',name:'J-hook',unit:'ea',defaultCost:2.50,qty:0},
+      {id:'p_clamp',name:'P-clamp',unit:'ea',defaultCost:3.50,qty:0},
+      {id:'dead_end_clamp',name:'Dead-end Clamp / Guy Grip',unit:'ea',defaultCost:18,qty:0},
+      {id:'down_guy_anchor',name:'Down Guy and Anchor',unit:'ea',defaultCost:250,qty:0},
+      {id:'pole_bracket',name:'Pole Attachment / Bracket',unit:'ea',defaultCost:25,qty:0},
+      {id:'aerial_splice_closure',name:'Aerial Splice Closure',unit:'ea',defaultCost:185,qty:0},
+      {id:'snow_shoe',name:'Snow Shoe / Cable Spacer',unit:'ea',defaultCost:8,qty:0},
+    ]
+  },
+  underground_boring: {
+    label:'Underground / Boring', color:'var(--orange)', items:[
+      {id:'bore_ft',name:'Directional Bore',unit:'ft',defaultCost:8.50,qty:0},
+      {id:'plow_ft',name:'Plow',unit:'ft',defaultCost:3.50,qty:0},
+      {id:'trench_ft',name:'Trench',unit:'ft',defaultCost:5.00,qty:0},
+      {id:'open_trench_ft',name:'Open Trench with Restore',unit:'ft',defaultCost:12.00,qty:0},
+      {id:'concrete_enc_ft',name:'Concrete Encasement',unit:'ft',defaultCost:18.00,qty:0},
+      {id:'warning_tape',name:'Warning Tape',unit:'ft',defaultCost:0.03,qty:0},
+      {id:'tracer_wire',name:'Locate Wire / Tracer Wire',unit:'ft',defaultCost:0.06,qty:0},
+      {id:'pull_tape',name:'Pull Tape / Pull Rope',unit:'ft',defaultCost:0.02,qty:0},
+    ]
+  },
+  testing_passive: {
+    label:'Testing / Passive Equipment', color:'var(--teal)', items:[
+      {id:'splitter_1x2',name:'Splitter 1x2',unit:'ea',defaultCost:8,qty:0},
+      {id:'splitter_1x4',name:'Splitter 1x4',unit:'ea',defaultCost:12,qty:0},
+      {id:'splitter_1x8',name:'Splitter 1x8',unit:'ea',defaultCost:18,qty:0},
+      {id:'splitter_1x16',name:'Splitter 1x16',unit:'ea',defaultCost:28,qty:0},
+      {id:'splitter_1x32',name:'Splitter 1x32',unit:'ea',defaultCost:45,qty:0},
+      {id:'splitter_1x64',name:'Splitter 1x64',unit:'ea',defaultCost:85,qty:0},
+      {id:'splitter_1x128',name:'Splitter 1x128',unit:'ea',defaultCost:150,qty:0},
+      {id:'wdm_filter',name:'WDM Filter',unit:'ea',defaultCost:35,qty:0},
+      {id:'patch_panel_12',name:'Patch Panel 12-port',unit:'ea',defaultCost:65,qty:0},
+      {id:'patch_panel_24',name:'Patch Panel 24-port',unit:'ea',defaultCost:95,qty:0},
+      {id:'patch_panel_48',name:'Patch Panel 48-port',unit:'ea',defaultCost:145,qty:0},
+      {id:'patch_panel_72',name:'Patch Panel 72-port',unit:'ea',defaultCost:195,qty:0},
+      {id:'patch_panel_96',name:'Patch Panel 96-port',unit:'ea',defaultCost:245,qty:0},
+      {id:'fiber_patch_cord',name:'Fiber Patch Cord',unit:'ea',defaultCost:8,qty:0},
+      {id:'attenuator',name:'Attenuator',unit:'ea',defaultCost:12,qty:0},
+    ]
+  },
+  restoration_misc: {
+    label:'Restoration / Misc', color:'var(--text-dim)', items:[
+      {id:'ground_rod',name:'Ground Rod',unit:'ea',defaultCost:25,qty:0},
+      {id:'grounding_hw',name:'Grounding Hardware',unit:'ea',defaultCost:15,qty:0},
+      {id:'marker_post',name:'Marker Post / Bollard',unit:'ea',defaultCost:35,qty:0},
+      {id:'warning_sign',name:'Warning Sign',unit:'ea',defaultCost:18,qty:0},
+      {id:'permit_cost',name:'Permit Cost',unit:'ea',defaultCost:500,qty:0},
+      {id:'easement_cost',name:'Easement Cost',unit:'ea',defaultCost:1500,qty:0},
+    ]
   }
 };
 
-// ═══════════ FILE QUEUE ═══════════
+// Material aliases: map file-detected keys to catalog IDs
+const MATERIAL_ALIASES = {
+  '2F':'micro_2f_ug','4F':'micro_4f_ug','6F':'micro_6f_ug','8F':'micro_8f_ug',
+  '12F':'micro_12f_ug','24F':'micro_24f_ug','48F':'micro_48f_ug','72F':'micro_72f_ug',
+  '96F':'micro_96f_ug','144F':'micro_144f_ug','192F':'micro_192f_ug','216F':'micro_216f_ug',
+  '288F':'micro_288f_ug','432F':'micro_432f_ug','576F':'micro_576f_ug','864F':'micro_864f_ug',
+  '1-way duct':'multiway_1way','2-way duct':'multiway_2way','3-way duct':'multiway_3way',
+  '4-way duct':'multiway_4way','7-way duct':'multiway_7way','12-way duct':'multiway_12way',
+  'Handholes':'hh_17x30','Splice Closures':'splice_closure_dome',
+};
+
+function resolveToMaterialId(rawKey){
+  if(MATERIAL_ALIASES[rawKey]!==undefined) return MATERIAL_ALIASES[rawKey];
+  const n=rawKey.toLowerCase().trim();
+  let m=n.match(/^(\d+)\s*(?:fibers?|f)\s*(?:\(ft\))?$/);
+  if(m) return MATERIAL_ALIASES[m[1]+'F']||null;
+  m=n.match(/^(\d+)\s*way\s*duct\s*(?:\(ft\))?$/);
+  if(m) return MATERIAL_ALIASES[m[1]+'-way duct']||null;
+  if(/microduct/.test(n)) return 'microduct_10mm';
+  if(/innerduct/.test(n)) return 'innerduct_1in';
+  if(/drop\s*cable/.test(n)) return 'drop_flat';
+  if(/splice\s*closure/.test(n)) return 'splice_closure_dome';
+  if(/handhole/.test(n)) return 'hh_17x30';
+  return null;
+}
+
+// Runtime mutable copy
+let projectMaterials = JSON.parse(JSON.stringify(DEFAULT_MATERIALS));
+
+function mergeMaterialsIntoCatalog(){
+  projectMaterials = JSON.parse(JSON.stringify(DEFAULT_MATERIALS));
+  const unmapped = {};
+  dataSources.forEach(src=>{
+    Object.entries(src.materials).forEach(([rawKey,quantity])=>{
+      if(rawKey==='Structures') return; // handled separately
+      const catId = resolveToMaterialId(rawKey);
+      if(catId){
+        for(const cat of Object.values(projectMaterials)){
+          const item=cat.items.find(it=>it.id===catId);
+          if(item){ item.qty+=quantity; break; }
+        }
+      } else {
+        unmapped[rawKey]=(unmapped[rawKey]||0)+quantity;
+      }
+    });
+  });
+  // Map structure counts to handholes
+  const hhCount = structures.features.filter(f=>f.properties.type==='handhole').length;
+  const cabCount = structures.features.filter(f=>f.properties.type==='cabinet').length;
+  if(hhCount>0){
+    const hhItem = projectMaterials.structures_enclosures.items.find(it=>it.id==='hh_17x30');
+    if(hhItem) hhItem.qty += hhCount;
+  }
+  if(cabCount>0){
+    const cabItem = projectMaterials.structures_enclosures.items.find(it=>it.id==='olt_cabinet');
+    if(cabItem) cabItem.qty += cabCount;
+  }
+  if(Object.keys(unmapped).length>0){
+    projectMaterials.unmapped={
+      label:'Unmapped / Custom Materials', color:'var(--text-muted)',
+      items: Object.entries(unmapped).map(([key,qty])=>({
+        id:'unmapped_'+key.toLowerCase().replace(/[^a-z0-9]/g,'_'),
+        name:key, unit:'ea', defaultCost:0, qty:qty
+      }))
+    };
+  }
+}
+
+// =========== FILE QUEUE ===========
 function queueFiles(files){
   for(const f of files){
-    const ext = f.name.split('.').pop().toLowerCase();
-    if(['kmz','kml','csv','xlsx','xls','pdf'].includes(ext)){
-      fileQueue.push(f);
-    }
+    const ext=f.name.split('.').pop().toLowerCase();
+    if(['kmz','kml','csv','xlsx','xls','pdf'].includes(ext)) fileQueue.push(f);
   }
   renderQueue();
 }
-
-function removeFromQueue(idx){
-  fileQueue.splice(idx,1);
-  renderQueue();
-}
-
+function removeFromQueue(idx){ fileQueue.splice(idx,1); renderQueue(); }
 function renderQueue(){
-  const sec = document.getElementById('fileQueueSection');
-  const list = document.getElementById('fileQueueList');
-  const cnt = document.getElementById('queueCount');
-  const btn = document.getElementById('analyzeBtn');
-
-  if(fileQueue.length === 0){
-    sec.style.display='none';
-    btn.disabled=true;
-    btn.textContent='Add files to begin';
-    return;
-  }
-
-  sec.style.display='block';
-  cnt.textContent=fileQueue.length;
-  btn.disabled=false;
-  btn.textContent=`Analyze ${fileQueue.length} file${fileQueue.length>1?'s':''}`;
-
-  const icons = {kmz:'&#127758;',kml:'&#127758;',csv:'&#128196;',xlsx:'&#128202;',xls:'&#128202;',pdf:'&#128213;'};
-  list.innerHTML = fileQueue.map((f,i)=>{
-    const ext = f.name.split('.').pop().toLowerCase();
-    return `<div class="file-queue-item">
-      <span class="fq-icon">${icons[ext]||'&#128196;'}</span>
-      <span class="fq-name">${f.name}</span>
-      <span class="fq-type">${ext}</span>
-      <button class="fq-remove" onclick="removeFromQueue(${i})" title="Remove">&times;</button>
-    </div>`;
+  const sec=document.getElementById('fileQueueSection');
+  const list=document.getElementById('fileQueueList');
+  const cnt=document.getElementById('queueCount');
+  const btn=document.getElementById('analyzeBtn');
+  if(fileQueue.length===0){ sec.style.display='none'; btn.disabled=true; btn.textContent='Add files to begin'; return; }
+  sec.style.display='block'; cnt.textContent=fileQueue.length;
+  btn.disabled=false; btn.textContent=`Analyze ${fileQueue.length} file${fileQueue.length>1?'s':''}`;
+  const icons={kmz:'&#127758;',kml:'&#127758;',csv:'&#128196;',xlsx:'&#128202;',xls:'&#128202;',pdf:'&#128213;'};
+  list.innerHTML=fileQueue.map((f,i)=>{
+    const ext=f.name.split('.').pop().toLowerCase();
+    return `<div class="file-queue-item"><span class="fq-icon">${icons[ext]||'&#128196;'}</span><span class="fq-name">${f.name}</span><span class="fq-type">${ext}</span><button class="fq-remove" onclick="removeFromQueue(${i})" title="Remove">&times;</button></div>`;
   }).join('');
 }
-
 async function processQueue(){
-  const btn = document.getElementById('analyzeBtn');
-  btn.disabled=true;
-  btn.textContent='Processing...';
-
-  for(const f of fileQueue){
-    await processFile(f);
-  }
+  const btn=document.getElementById('analyzeBtn');
+  btn.disabled=true; btn.textContent='Processing...';
+  for(const f of fileQueue) await processFile(f);
   fileQueue=[];
-
-  // Merge all sources
   mergeAllSources();
   render();
 }
-
 async function processFile(f){
-  const ext = f.name.split('.').pop().toLowerCase();
-  const source = { name:f.name, type:ext, routes:[], structures:[], quarterly:[], materials:{} };
-
-  try {
-    if(ext==='kmz'||ext==='kml'){
-      await parseKMZToSource(f, source);
-    } else if(ext==='csv'){
-      await parseCSVToSource(f, source);
-    } else if(ext==='xlsx'||ext==='xls'){
-      await parseExcelToSource(f, source);
-    } else if(ext==='pdf'){
-      await parsePDFToSource(f, source);
-    }
+  const ext=f.name.split('.').pop().toLowerCase();
+  const source={name:f.name,type:ext,routes:[],structures:[],quarterly:[],materials:{}};
+  try{
+    if(ext==='kmz'||ext==='kml') await parseKMZToSource(f,source);
+    else if(ext==='csv') await parseCSVToSource(f,source);
+    else if(ext==='xlsx'||ext==='xls') await parseExcelToSource(f,source);
+    else if(ext==='pdf') await parsePDFToSource(f,source);
     dataSources.push(source);
-    toast(`Loaded: ${f.name}`, 'success');
-  } catch(e){
-    toast(`Error: ${f.name} - ${e.message}`, 'error');
-    console.error(e);
-  }
+    toast(`Loaded: ${f.name}`,'success');
+  }catch(e){ toast(`Error: ${f.name} - ${e.message}`,'error'); console.error(e); }
 }
-
 function addMoreFiles(files){
-  for(const f of files) processFile(f).then(()=>{
-    mergeAllSources();
-    render();
-  });
+  for(const f of files) processFile(f).then(()=>{ mergeAllSources(); render(); });
 }
 
-// ═══════════ KMZ PARSER ═══════════
-async function parseKMZToSource(file, source){
+// =========== KMZ PARSER ===========
+async function parseKMZToSource(file,source){
   toast('Parsing '+file.name+'...');
-  const ab = await file.arrayBuffer();
+  const ab=await file.arrayBuffer();
   let kml;
-  if(file.name.endsWith('.kml')){
-    kml = new TextDecoder().decode(ab);
-  } else {
-    const zip = await JSZip.loadAsync(ab);
-    const kf = Object.keys(zip.files).find(n=>n.endsWith('.kml'));
-    if(!kf) throw new Error('No KML in KMZ');
-    kml = await zip.files[kf].async('string');
-  }
-
-  const feats=[], pts=[];
-  const pms = allPlacemarks(kml);
+  if(file.name.endsWith('.kml')){ kml=new TextDecoder().decode(ab); }
+  else{ const zip=await JSZip.loadAsync(ab); const kf=Object.keys(zip.files).find(n=>n.endsWith('.kml')); if(!kf)throw new Error('No KML in KMZ'); kml=await zip.files[kf].async('string'); }
+  const feats=[],pts=[];
+  const pms=allPlacemarks(kml);
   for(const pm of pms){
-    const name = tag(pm,'name')||'Unknown';
-    const coords = tag(pm,'coordinates');
-    if(!coords) continue;
-
+    const name=tag(pm,'name')||'Unknown';
+    const coords=tag(pm,'coordinates');
+    if(!coords)continue;
     const ext={};
-    for(const m of pm.matchAll(/<SimpleData name="([^"]*)">(.*?)<\/SimpleData>/gs))
-      ext[m[1].toLowerCase()]=m[2].trim();
-
+    for(const m of pm.matchAll(/<SimpleData name="([^"]*)">(.*?)<\/SimpleData>/gs)) ext[m[1].toLowerCase()]=m[2].trim();
     if(pm.includes('<LineString>')){
-      const cc = parseCoords(coords);
-      if(cc.length<2) continue;
-      const ft = haversine(cc);
-      const p = {name, route_type:'fiber', length_ft:Math.round(ft*100)/100, source:file.name};
-
-      const fm = name.match(/MMT(\d+)/i)||name.match(/(\d+)\s*F(?:\b|-)/i)||name.match(/(\d+)\s*fiber/i);
-      if(fm){ let fc=parseInt(fm[1]); if(name.match(/MMT24\b/)&&fc===24)fc=432; p.fiber_count=fc; }
-      const dm = name.match(/UGM(\d+)/i)||name.match(/(\d+)\s*way/i);
-      if(dm){ const u=parseInt(dm[1]); p.duct_ways={1:2,2:4,3:7}[u]||u; p.route_type='conduit'; }
-
+      const cc=parseCoords(coords);if(cc.length<2)continue;
+      const ft=haversine(cc);
+      const p={name,route_type:'fiber',length_ft:Math.round(ft*100)/100,source:file.name};
+      const fm=name.match(/MMT(\d+)/i)||name.match(/(\d+)\s*F(?:\b|-)/i)||name.match(/(\d+)\s*fiber/i);
+      if(fm){let fc=parseInt(fm[1]);if(name.match(/MMT24\b/)&&fc===24)fc=432;p.fiber_count=fc;}
+      const dm=name.match(/UGM(\d+)/i)||name.match(/(\d+)\s*way/i);
+      if(dm){const u=parseInt(dm[1]);p.duct_ways={1:2,2:4,3:7}[u]||u;p.route_type='conduit';}
       feats.push({type:'Feature',properties:p,geometry:{type:'LineString',coordinates:cc}});
-    } else if(pm.includes('<Point>')){
+    }else if(pm.includes('<Point>')){
       const c=coords.trim().split(',');
       if(c.length>=2){
         const lon=parseFloat(c[0]),lat=parseFloat(c[1]);
         if(!isNaN(lon)&&!isNaN(lat)){
-          const folder = folderOf(kml,pm);
-          const isCab = /cabinet|olt/i.test(name)||/cabinet|olt/i.test(folder);
+          const folder=folderOf(kml,pm);
+          const isCab=/cabinet|olt/i.test(name)||/cabinet|olt/i.test(folder);
           pts.push({type:'Feature',properties:{name,type:isCab?'cabinet':'handhole',source:file.name},geometry:{type:'Point',coordinates:[lon,lat]}});
         }
       }
     }
   }
-
   // FTTH auto-classify
-  const unclass = feats.filter(f=>!f.properties.fiber_count&&f.properties.route_type==='fiber');
+  const unclass=feats.filter(f=>!f.properties.fiber_count&&f.properties.route_type==='fiber');
   if(unclass.length>50){
     const sorted=[...unclass].sort((a,b)=>a.properties.length_ft-b.properties.length_ft);
     const n=sorted.length;
     const t1=sorted[Math.floor(n*.92)]?.properties.length_ft||656;
     const t2=sorted[Math.floor(n*.98)]?.properties.length_ft||1638;
     feats.forEach(f=>{
-      if(f.properties.fiber_count||f.properties.route_type!=='fiber') return;
+      if(f.properties.fiber_count||f.properties.route_type!=='fiber')return;
       const ft=f.properties.length_ft;
       if(ft<=t1){f.properties.fiber_count=2;f.properties.cable_type='Drop';}
       else if(ft<=t2){f.properties.fiber_count=24;f.properties.cable_type='Lateral/Feeder';}
       else{f.properties.fiber_count=72;f.properties.cable_type='Distribution';}
     });
   }
-
-  source.routes = feats;
-  source.structures = pts;
-
-  // Build materials from routes
-  const mats = {};
+  source.routes=feats; source.structures=pts;
+  const mats={};
   feats.forEach(f=>{
-    if(f.properties.fiber_count){
-      const k = f.properties.fiber_count+'F';
-      mats[k] = (mats[k]||0) + (f.properties.length_ft||0);
-    }
-    if(f.properties.duct_ways){
-      const k = f.properties.duct_ways+'-way duct';
-      mats[k] = (mats[k]||0) + (f.properties.length_ft||0);
-    }
+    if(f.properties.fiber_count){ const k=f.properties.fiber_count+'F'; mats[k]=(mats[k]||0)+(f.properties.length_ft||0); }
+    if(f.properties.duct_ways){ const k=f.properties.duct_ways+'-way duct'; mats[k]=(mats[k]||0)+(f.properties.length_ft||0); }
   });
-  mats['Structures'] = pts.length;
-  source.materials = mats;
+  mats['Structures']=pts.length;
+  source.materials=mats;
 }
 
-// ═══════════ CSV PARSER ═══════════
-async function parseCSVToSource(file, source){
-  const text = await file.text();
-  const lines = text.trim().split('\n');
-  if(lines.length<2) throw new Error('Empty CSV');
-  const hdr = lines[0].split(',').map(h=>h.trim());
-  const data=[];
+// =========== CSV PARSER ===========
+async function parseCSVToSource(file,source){
+  const text=await file.text(); const lines=text.trim().split('\n');
+  if(lines.length<2)throw new Error('Empty CSV');
+  const hdr=lines[0].split(',').map(h=>h.trim()); const data=[];
   for(let i=1;i<lines.length;i++){
-    const v=lines[i].split(',');if(!v[0]?.trim()) continue;
-    const row={};hdr.forEach((h,j)=>{row[h]=v[j]?v[j].trim():'0';});
-    data.push(row);
+    const v=lines[i].split(',');if(!v[0]?.trim())continue;
+    const row={};hdr.forEach((h,j)=>{row[h]=v[j]?v[j].trim():'0';});data.push(row);
   }
-  source.quarterly = data;
-
-  // Extract materials from columns
-  const mats = {};
-  data.forEach(row=>{
-    Object.keys(row).forEach(k=>{
-      if(k==='Quarter'||k==='Total Routes') return;
-      const v = parseFloat(row[k])||0;
-      if(v>0) mats[k] = (mats[k]||0) + v;
-    });
-  });
-  source.materials = mats;
+  source.quarterly=data;
+  const mats={};
+  data.forEach(row=>{Object.keys(row).forEach(k=>{if(k==='Quarter'||k==='Total Routes')return;const v=parseFloat(row[k])||0;if(v>0)mats[k]=(mats[k]||0)+v;});});
+  source.materials=mats;
 }
 
-// ═══════════ EXCEL PARSER ═══════════
-async function parseExcelToSource(file, source){
-  const ab = await file.arrayBuffer();
-  const wb = XLSX.read(ab, {type:'array'});
-
-  // Process all sheets
-  const allMats = {};
-  wb.SheetNames.forEach(sheetName => {
-    const data = XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
+// =========== EXCEL PARSER ===========
+async function parseExcelToSource(file,source){
+  const ab=await file.arrayBuffer(); const wb=XLSX.read(ab,{type:'array'});
+  const allMats={};
+  wb.SheetNames.forEach(sheetName=>{
+    const data=XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
     if(data.length){
-      if(data[0].Quarter){
-        source.quarterly = data.map(r=>{const c={};Object.keys(r).forEach(k=>{c[k]=String(r[k]);});return c;});
-      }
-      // Extract any numeric columns as materials
-      data.forEach(row=>{
-        Object.keys(row).forEach(k=>{
-          const v = parseFloat(row[k]);
-          if(!isNaN(v) && v>0 && k!=='Quarter'){
-            allMats[k] = (allMats[k]||0) + v;
-          }
-        });
-      });
+      if(data[0].Quarter) source.quarterly=data.map(r=>{const c={};Object.keys(r).forEach(k=>{c[k]=String(r[k]);});return c;});
+      data.forEach(row=>{Object.keys(row).forEach(k=>{const v=parseFloat(row[k]);if(!isNaN(v)&&v>0&&k!=='Quarter') allMats[k]=(allMats[k]||0)+v;});});
     }
   });
-  source.materials = allMats;
+  source.materials=allMats;
 }
 
-// ═══════════ PDF PARSER ═══════════
-async function parsePDFToSource(file, source){
+// =========== PDF PARSER ===========
+async function parsePDFToSource(file,source){
   toast('Reading PDF...');
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
   let txt='';
-  for(let i=1;i<=pdf.numPages;i++){
-    const p=await pdf.getPage(i);
-    const tc=await p.getTextContent();
-    txt+=tc.items.map(x=>x.str).join(' ')+'\n';
-  }
-
-  // Try to extract materials from PDF text
-  const mats = {};
-  const patterns = [
-    /(\d[\d,]*\.?\d*)\s*(?:ft|feet|foot)\s+(?:of\s+)?(\d+)\s*(?:f(?:iber)?|count)/gi,
-    /(\d+)\s*(?:f(?:iber)?|count)\s*[-:]\s*(\d[\d,]*\.?\d*)\s*(?:ft|feet)/gi,
-    /fiber\s*count\s*[-:]\s*(\d+)/gi,
-    /(\d[\d,]*\.?\d*)\s*(?:ft|feet)\s+(?:of\s+)?(?:micro|inner)?duct/gi,
-    /(\d[\d,]*)\s+handholes?/gi,
-    /(\d[\d,]*)\s+splice\s*closures?/gi,
-    /(\d[\d,]*)\s+(?:drop|lateral|feeder|distribution)\s+cable/gi,
-  ];
-
-  // Generic number extraction
-  const numMatches = txt.matchAll(/(\d[\d,]*\.?\d*)\s*(?:linear\s+)?(?:ft|feet|foot)\b/gi);
+  for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i);const tc=await p.getTextContent();txt+=tc.items.map(x=>x.str).join(' ')+'\n';}
+  const mats={};
+  const numMatches=txt.matchAll(/(\d[\d,]*\.?\d*)\s*(?:linear\s+)?(?:ft|feet|foot)\b/gi);
   for(const m of numMatches){
-    const v = parseFloat(m[1].replace(/,/g,''));
-    if(v > 100){ // Only meaningful lengths
-      const ctx = txt.substring(Math.max(0,m.index-60), m.index+m[0].length+20).trim();
-      mats['PDF: '+ctx.substring(0,40)] = v;
-    }
+    const v=parseFloat(m[1].replace(/,/g,''));
+    if(v>100){const ctx=txt.substring(Math.max(0,m.index-60),m.index+m[0].length+20).trim();mats['PDF: '+ctx.substring(0,40)]=v;}
   }
-
-  const hhMatch = txt.match(/(\d[\d,]*)\s*handholes?/i);
-  if(hhMatch) mats['Handholes'] = parseInt(hhMatch[1].replace(/,/g,''));
-
-  const spliceMatch = txt.match(/(\d[\d,]*)\s*splice/i);
-  if(spliceMatch) mats['Splice Closures'] = parseInt(spliceMatch[1].replace(/,/g,''));
-
-  source.materials = mats;
-  source.pdfText = txt;
+  const hhMatch=txt.match(/(\d[\d,]*)\s*handholes?/i);
+  if(hhMatch) mats['Handholes']=parseInt(hhMatch[1].replace(/,/g,''));
+  const spliceMatch=txt.match(/(\d[\d,]*)\s*splice/i);
+  if(spliceMatch) mats['Splice Closures']=parseInt(spliceMatch[1].replace(/,/g,''));
+  source.materials=mats; source.pdfText=txt;
 }
 
-// ═══════════ MERGE SOURCES ═══════════
+// =========== MERGE SOURCES ===========
 function mergeAllSources(){
-  routes = { type:'FeatureCollection', features:[] };
-  structures = { type:'FeatureCollection', features:[] };
-  quarterly = [];
-
+  routes={type:'FeatureCollection',features:[]};
+  structures={type:'FeatureCollection',features:[]};
+  quarterly=[];
   dataSources.forEach(src=>{
     if(src.routes.length) routes.features.push(...src.routes);
     if(src.structures.length) structures.features.push(...src.structures);
     if(src.quarterly.length) quarterly.push(...src.quarterly);
   });
-
-  // If no quarterly from files, auto-generate
-  if(!quarterly.length && routes.features.length) autoQuarterly();
-
+  if(!quarterly.length&&routes.features.length) autoQuarterly();
   detectType();
   updateSourceCount();
+  mergeMaterialsIntoCatalog();
 }
 
 function updateSourceCount(){
-  const el = document.getElementById('sourceCount');
-  const sEl = document.getElementById('sSources');
-  el.style.display = dataSources.length ? '' : 'none';
-  el.textContent = dataSources.length + ' Source' + (dataSources.length!==1?'s':'');
-  sEl.textContent = dataSources.length;
+  const el=document.getElementById('sourceCount');
+  const sEl=document.getElementById('sSources');
+  el.style.display=dataSources.length?'':'none';
+  el.textContent=dataSources.length+' Source'+(dataSources.length!==1?'s':'');
+  sEl.textContent=dataSources.length;
 }
 
-// ═══════════ HELPERS ═══════════
-function allPlacemarks(kml){
-  const r=[];let i=0;
-  while(true){const s=kml.indexOf('<Placemark',i);if(s===-1)break;const e=kml.indexOf('</Placemark>',s);if(e===-1)break;r.push(kml.substring(s,e+12));i=e+12;}
-  return r;
-}
+// =========== HELPERS ===========
+function allPlacemarks(kml){const r=[];let i=0;while(true){const s=kml.indexOf('<Placemark',i);if(s===-1)break;const e=kml.indexOf('</Placemark>',s);if(e===-1)break;r.push(kml.substring(s,e+12));i=e+12;}return r;}
 function tag(t,n){const m=t.match(new RegExp(`<${n}[^>]*>(.*?)</${n}>`,'s'));return m?m[1].replace('<![CDATA[','').replace(']]>','').trim():null;}
 function parseCoords(t){return t.trim().split(/\s+/).map(c=>{const p=c.split(',');if(p.length>=2){const a=parseFloat(p[0]),b=parseFloat(p[1]);if(!isNaN(a)&&!isNaN(b))return[a,b];}return null}).filter(Boolean);}
 function haversine(cc){const R=20925524.9;let t=0;for(let i=0;i<cc.length-1;i++){const[a,b]=cc[i],[c,d]=cc[i+1];const dl=(d-b)*Math.PI/180,dn=(c-a)*Math.PI/180;const x=Math.sin(dl/2)**2+Math.cos(b*Math.PI/180)*Math.cos(d*Math.PI/180)*Math.sin(dn/2)**2;t+=R*2*Math.asin(Math.sqrt(x));}return t;}
@@ -924,7 +1073,7 @@ function getCols(){
   return{fibers,ducts,cables};
 }
 
-// ═══════════ UI HELPERS ═══════════
+// =========== UI HELPERS ===========
 function toast(msg,type){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='status-toast visible '+(type||'');
@@ -938,11 +1087,11 @@ function switchView(v){
     document.querySelector('.topnav-tab:nth-child(1)').classList.add('active');
     document.getElementById('viewMap').classList.add('active');
     if(map)map.invalidateSize();
-  } else if(v==='dash'){
+  }else if(v==='dash'){
     document.querySelector('.topnav-tab:nth-child(2)').classList.add('active');
     document.getElementById('viewDash').classList.add('active');
     buildDash();
-  } else {
+  }else{
     document.querySelector('.topnav-tab:nth-child(3)').classList.add('active');
     document.getElementById('viewCompare').classList.add('active');
     buildCompare();
@@ -950,9 +1099,17 @@ function switchView(v){
 }
 
 function fmt(n){return Math.round(n).toLocaleString();}
-function fmtC(n){return n===0?'$0':'$'+Math.round(n).toLocaleString();}
+function fmtC(n){return n===0?'$0':'$'+n.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});}
+function fmtC2(n){return '$'+n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
 
-// ═══════════ MAP ═══════════
+function skipToEmptyCatalog(){
+  document.getElementById('onboard').classList.add('hidden');
+  projectMaterials=JSON.parse(JSON.stringify(DEFAULT_MATERIALS));
+  buildDash();
+  switchView('dash');
+}
+
+// =========== MAP ===========
 function initMap(){
   map=L.map('map',{zoomControl:true}).setView([33.2,-96.7],10);
   setTile('terrain');
@@ -961,11 +1118,9 @@ function initMap(){
 
 function setTile(name){
   if(currentTileLayer) map.removeLayer(currentTileLayer);
-  const t = TILES[name];
-  currentTileLayer = L.tileLayer(t.url,{attribution:t.attr,maxZoom:19}).addTo(map);
-  document.querySelectorAll('.layer-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.layer===name);
-  });
+  const t=TILES[name];
+  currentTileLayer=L.tileLayer(t.url,{attribution:t.attr,maxZoom:19}).addTo(map);
+  document.querySelectorAll('.layer-btn').forEach(b=>b.classList.toggle('active',b.dataset.layer===name));
 }
 
 function render(){
@@ -974,15 +1129,10 @@ function render(){
   document.getElementById('sRoutes').textContent=fmt(routes.features.length);
   document.getElementById('sLength').textContent=fmt(totalFt/5280)+' mi';
   document.getElementById('sHH').textContent=fmt(structures.features.length);
-
-  if(dataSources.length && dataSources[0].routes.length){
-    document.getElementById('projName').value = dataSources[0].name.replace(/\.(kmz|kml)$/i,'');
+  if(dataSources.length&&dataSources[0].routes.length){
+    document.getElementById('projName').value=dataSources[0].name.replace(/\.(kmz|kml)$/i,'');
   }
-
-  drawRoutes();
-  fitBounds();
-  buildSidebar();
-  buildDash();
+  drawRoutes(); fitBounds(); buildSidebar(); buildDash();
 }
 
 function drawRoutes(){
@@ -990,8 +1140,7 @@ function drawRoutes(){
   if(structureLayer){map.removeLayer(structureLayer);structureLayer=null;}
   let vis=0;
   routes.features.forEach((f,i)=>{
-    if(!isVisible(f))return;
-    vis++;
+    if(!isVisible(f))return; vis++;
     const fc=f.properties.fiber_count;
     const color=FIBER_COLORS[fc]||'#64748b';
     L.geoJSON(f,{
@@ -1012,14 +1161,8 @@ function drawRoutes(){
 }
 
 function isVisible(f){
-  if(f.properties.route_type==='conduit'){
-    const cb=document.querySelector(`[data-duct="${f.properties.duct_ways}"]`);
-    if(cb&&!cb.checked)return false;
-  }
-  if(f.properties.fiber_count){
-    const cb=document.querySelector(`[data-fc="${f.properties.fiber_count}"]`);
-    if(cb&&!cb.checked)return false;
-  }
+  if(f.properties.route_type==='conduit'){const cb=document.querySelector(`[data-duct="${f.properties.duct_ways}"]`);if(cb&&!cb.checked)return false;}
+  if(f.properties.fiber_count){const cb=document.querySelector(`[data-fc="${f.properties.fiber_count}"]`);if(cb&&!cb.checked)return false;}
   return true;
 }
 
@@ -1042,15 +1185,11 @@ function toggleHH(){
       }),
       onEachFeature:(f,l)=>l.bindPopup(`<b>${f.properties.name}</b><br>${f.properties.type}${f.properties.source?'<br><span style="color:var(--text-muted)">'+f.properties.source+'</span>':''}`)
     }).addTo(map);
-  } else if(structureLayer){map.removeLayer(structureLayer);structureLayer=null;}
+  }else if(structureLayer){map.removeLayer(structureLayer);structureLayer=null;}
 }
 
-// ═══════════ SIDEBAR ═══════════
-function buildSidebar(){
-  recalcSidebar();
-  buildFilters();
-  buildLegend();
-}
+// =========== SIDEBAR ===========
+function buildSidebar(){ recalcSidebar(); buildFilters(); buildLegend(); }
 
 function recalcSidebar(){
   const div=document.getElementById('matsSummary');div.innerHTML='';
@@ -1058,31 +1197,23 @@ function recalcSidebar(){
   const slack=document.getElementById('chkSlack').checked?structures.features.length*parseInt(document.getElementById('selSlack').value):0;
   const waste=document.getElementById('chkWaste').checked?parseFloat(document.getElementById('selWaste').value):0;
   const rows=[];
-
   if(cols.ducts.length){
     let tot=0;
     cols.ducts.forEach(d=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[d.key]||0);});v*=(1+waste);tot+=v;rows.push({l:d.label,v:fmt(v)+' ft'});});
     rows.push({l:'Total Duct',v:fmt(tot)+' ft',b:true});
     rows.push({sep:true});
   }
-
   let totC=0;
-  if(cols.cables.length){
-    cols.cables.forEach(c=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[c.key]||0);});totC+=v;rows.push({l:c.label,v:fmt(v)+' ft'});});
-  }
-  if(cols.fibers.length){
-    cols.fibers.forEach(f=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[f.key]||0);});totC+=v;rows.push({l:f.label,v:fmt(v)+' ft'});});
-  }
+  if(cols.cables.length) cols.cables.forEach(c=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[c.key]||0);});totC+=v;rows.push({l:c.label,v:fmt(v)+' ft'});});
+  if(cols.fibers.length) cols.fibers.forEach(f=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[f.key]||0);});totC+=v;rows.push({l:f.label,v:fmt(v)+' ft'});});
   if(slack){totC+=slack;rows.push({l:'Slack',v:fmt(slack)+' ft'});}
   rows.push({l:'Total Cable',v:fmt(totC)+' ft',b:true});
   rows.push({sep:true});
-
   const cabs=structures.features.filter(f=>f.properties.type==='cabinet').length;
   const hhs=structures.features.length-cabs;
   if(cabs)rows.push({l:'OLT Cabinets',v:String(cabs)});
   rows.push({l:'Handholes',v:fmt(hhs)});
   rows.push({l:'Total Structures',v:fmt(structures.features.length),b:true});
-
   rows.forEach(r=>{
     if(r.sep){const d=document.createElement('div');d.className='sep';d.style.margin='6px 0';div.appendChild(d);return;}
     const el=document.createElement('div');el.className='stat';
@@ -1103,7 +1234,6 @@ function buildFilters(){
     el.innerHTML=`<input type="checkbox" checked data-fc="${fc}" onchange="drawRoutes()"><label>${lbl}</label><span class="ft">${fmt(totalFt)} ft</span>`;
     ffDiv.appendChild(el);
   });
-
   const fdDiv=document.getElementById('filterDuct');fdDiv.innerHTML='';
   const ducts=[...new Set(routes.features.filter(f=>f.properties.duct_ways).map(f=>f.properties.duct_ways))].sort((a,b)=>a-b);
   if(ducts.length){
@@ -1113,9 +1243,7 @@ function buildFilters(){
       el.innerHTML=`<input type="checkbox" checked data-duct="${w}" onchange="drawRoutes()"><label>${w}-way</label><span class="ft">${fmt(totalFt)} ft</span>`;
       fdDiv.appendChild(el);
     });
-  } else {
-    fdDiv.innerHTML='<div style="color:var(--text-muted);font-size:11px">No conduit data</div>';
-  }
+  }else{ fdDiv.innerHTML='<div style="color:var(--text-muted);font-size:11px">No conduit data</div>'; }
 }
 
 function buildLegend(){
@@ -1130,273 +1258,144 @@ function buildLegend(){
   });
 }
 
-// ═══════════ DASHBOARD ═══════════
-function buildDash(){buildUnitCosts();buildQtrMaterials();buildTotalMaterials();}
+// =========== DASHBOARD (CATALOG) ===========
+function buildDash(){
+  // Filter bar
+  const filterBar=document.getElementById('dashFilterBar');
+  filterBar.innerHTML=`<div class="filter-bar">
+    <label><input type="checkbox" ${hideZeros?'checked':''} onchange="hideZeros=this.checked;buildDash()"> Hide zero-quantity items</label>
+    <span style="flex:1"></span>
+    <span style="font-size:12px;color:var(--text-muted)">All quantities and costs are editable</span>
+  </div>`;
 
-function buildUnitCosts(){
-  const grid=document.getElementById('unitCosts');grid.innerHTML='';
-  const cols=getCols();
+  const container=document.getElementById('materialsCatalog');
+  container.innerHTML='';
+  let grandTotal=0;
 
-  if(pType==='ftth'){
-    const cableItems=[];
-    if(cols.cables.length)cols.cables.forEach(c=>cableItems.push({l:c.label,k:'cable_'+c.name.toLowerCase().replace(/[^a-z]/g,'_')}));
-    else cols.fibers.forEach(f=>cableItems.push({l:f.label,k:'fiber_'+f.count}));
-    if(cableItems.length)addCostCard(grid,'Cable ($/ft)',cableItems);
+  Object.entries(projectMaterials).forEach(([catKey,category])=>{
+    const isCollapsed=collapsedCats[catKey]||false;
+    const visibleItems=hideZeros?category.items.filter(it=>it.qty>0):category.items;
+    const allItems=category.items;
 
-    const ductItems=[];
-    if(cols.ducts.length)cols.ducts.forEach(d=>ductItems.push({l:d.label,k:'duct_'+d.label.toLowerCase().replace(/[^a-z0-9]/g,'_')}));
-    else ductItems.push({l:'Microduct',k:'duct_microduct'},{l:'Innerduct',k:'duct_innerduct'});
-    addCostCard(grid,'Conduit / Duct ($/ft)',ductItems);
+    let catSubtotal=0;
+    allItems.forEach(it=>{catSubtotal+=it.qty*(it.currentCost!==undefined?it.currentCost:it.defaultCost);});
+    grandTotal+=catSubtotal;
 
-    addCostCard(grid,'Connectors ($/unit)',[{l:'SC/APC',k:'conn_scapc'},{l:'LC/APC',k:'conn_lcapc'},{l:'Pre-conn Drop',k:'conn_preconn'}]);
-    addCostCard(grid,'Splice & Closures ($/unit)',[{l:'Splice Closure',k:'splice_closure'},{l:'Splice Tray',k:'splice_tray'},{l:'Drop Terminal',k:'ftth_terminal'}]);
-    addCostCard(grid,'Structures ($/unit)',[{l:'Handhole',k:'hh_std'},{l:'Pedestal',k:'ftth_ped'},{l:'ONT Enclosure',k:'ftth_ont'},{l:'OLT Cabinet',k:'ftth_olt'}]);
-  } else {
-    const ductItems=[];
-    if(cols.ducts.length)cols.ducts.forEach(d=>ductItems.push({l:d.label,k:'duct_'+d.ways}));
-    else [{l:'2-way',k:'duct_2'},{l:'4-way',k:'duct_4'},{l:'7-way',k:'duct_7'}].forEach(x=>ductItems.push(x));
-    addCostCard(grid,'Conduit ($/ft)',ductItems);
+    const itemCount=allItems.filter(it=>it.qty>0).length;
+    const section=document.createElement('div');
+    section.className='dash-section';
 
-    const fiberItems=[];
-    if(cols.fibers.length)cols.fibers.forEach(f=>fiberItems.push({l:f.label,k:'fiber_'+f.count}));
-    else [48,96,144,288,432].forEach(fc=>fiberItems.push({l:fc+'F',k:'fiber_'+fc}));
-    addCostCard(grid,'Fiber ($/ft)',fiberItems);
+    let h=`<div class="cat-header" onclick="toggleCat('${catKey}')">
+      <span class="cat-toggle-icon ${isCollapsed?'collapsed':''}">&#9660;</span>
+      <div class="dash-section-title" style="color:${category.color||'var(--text)'};margin-bottom:0;flex:1;">
+        ${category.label}
+        <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:8px;">${itemCount} item${itemCount!==1?'s':''} with qty</span>
+        <span class="line"></span>
+        <span style="font-size:13px;color:var(--accent);font-weight:700;">${fmtC(catSubtotal)}</span>
+      </div>
+    </div>`;
 
-    addCostCard(grid,'Handholes ($/unit)',[{l:'HH Large',k:'hh_lg'},{l:'HH Standard',k:'hh_sm'}]);
-    addCostCard(grid,'Splice Cases ($/unit)',[{l:'450B',k:'sp_450b'},{l:'450C',k:'sp_450c'},{l:'450D',k:'sp_450d'}]);
-    addCostCard(grid,'Other ($/unit)',[{l:'Connectors',k:'oth_conn'},{l:'Ground Rods',k:'oth_gnd'}]);
-  }
-}
+    if(!isCollapsed){
+      h+=`<div style="overflow-x:auto;margin-top:8px;">
+        <table class="cat-table">
+          <thead><tr>
+            <th style="width:35%">Material</th>
+            <th style="width:8%;text-align:center">Unit</th>
+            <th style="width:17%;text-align:right">Quantity</th>
+            <th style="width:17%;text-align:right">Unit Cost ($)</th>
+            <th style="width:23%;text-align:right">Extended Cost</th>
+          </tr></thead>
+          <tbody>`;
 
-function addCostCard(grid,title,items){
-  const card=document.createElement('div');card.className='card';
-  let h=`<div class="card-title">${title}</div>`;
-  items.forEach(it=>{
-    h+=`<div class="card-row"><span class="lbl">${it.l}</span><input type="number" id="c_${it.k}" value="0" min="0" step="0.01" onchange="buildQtrMaterials();buildTotalMaterials()"></div>`;
-  });
-  card.innerHTML=h;grid.appendChild(card);
-}
-
-function gc(k){const e=document.getElementById('c_'+k);return e?parseFloat(e.value)||0:0;}
-
-function buildQtrMaterials(){
-  const div=document.getElementById('qtrMaterials');div.innerHTML='';
-  const cols=getCols();
-  const waste=document.getElementById('chkWaste').checked?parseFloat(document.getElementById('selWaste').value):0;
-  const slack=document.getElementById('chkSlack').checked?parseInt(document.getElementById('selSlack').value):0;
-  const totalHH=structures.features.length;
-  const totalRoutes=quarterly.reduce((s,q)=>s+parseInt(q['Total Routes']||0),0);
-
-  quarterly.forEach(q=>{
-    const ratio=totalRoutes>0?parseInt(q['Total Routes']||0)/totalRoutes:1;
-    const hhQ=Math.round(totalHH*ratio);
-    const slackQ=slack*hhQ;
-
-    const qCard=document.createElement('div');qCard.className='quarter-card';
-    let h=`<div class="quarter-header">${q.Quarter}</div><div class="quarter-grid">`;
-    let budget=0;
-
-    if(pType==='ftth'){
-      h+='<div class="card"><div class="card-title">Cable</div>';
-      let totC=0,totCC=0;
-      if(cols.cables.length){
-        cols.cables.forEach(c=>{
-          const origVal=parseFloat(q[c.key]||0);
-          const ck='cable_'+c.name.toLowerCase().replace(/[^a-z]/g,'_');
-          const cost=origVal*gc(ck);totC+=origVal;totCC+=cost;
-          h+=`<div class="card-row"><span class="lbl">${c.label}</span><input type="number" class="editable-qty" value="${Math.round(origVal)}" data-qkey="${q.Quarter}" data-mkey="${c.key}" onchange="updateQtyVal(this)"> ft<span class="cst">${fmtC(cost)}</span></div>`;
-        });
-      } else {
-        cols.fibers.forEach(f=>{
-          const origVal=parseFloat(q[f.key]||0);const cost=origVal*gc('fiber_'+f.count);totC+=origVal;totCC+=cost;
-          h+=`<div class="card-row"><span class="lbl">${f.label}</span><input type="number" class="editable-qty" value="${Math.round(origVal)}" data-qkey="${q.Quarter}" data-mkey="${f.key}" onchange="updateQtyVal(this)"> ft<span class="cst">${fmtC(cost)}</span></div>`;
-        });
+      const items=hideZeros?visibleItems:allItems;
+      if(items.length===0){
+        h+=`<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:12px;font-size:12px;">No items with quantities &mdash; uncheck "Hide zero-quantity" to see all ${allItems.length} items</td></tr>`;
       }
-      if(slackQ){totC+=slackQ;h+=`<div class="card-row"><span class="lbl">Slack</span><span class="val">${fmt(slackQ)} ft</span><span class="cst">--</span></div>`;}
-      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totC)} ft</span><span class="cst">${fmtC(totCC)}</span></div></div>`;
-      budget+=totCC;
-
-      h+='<div class="card"><div class="card-title">Conduit / Duct</div>';
-      let totD=0,totDC=0;
-      const ductKeys=cols.ducts.length?cols.ducts.map(d=>({label:d.label,key:d.key,ck:'duct_'+d.label.toLowerCase().replace(/[^a-z0-9]/g,'_')})):[{label:'Microduct',key:'Microduct (ft)',ck:'duct_microduct'},{label:'Innerduct',key:'Innerduct (ft)',ck:'duct_innerduct'}];
-      ductKeys.forEach(d=>{
-        let v=parseFloat(q[d.key]||0);v*=(1+waste);
-        const cost=v*gc(d.ck);totD+=v;totDC+=cost;
-        h+=`<div class="card-row"><span class="lbl">${d.label}</span><input type="number" class="editable-qty" value="${Math.round(v)}" data-qkey="${q.Quarter}" data-mkey="${d.key}" onchange="updateQtyVal(this)"> ft<span class="cst">${fmtC(cost)}</span></div>`;
+      items.forEach(item=>{
+        const cost=item.currentCost!==undefined?item.currentCost:item.defaultCost;
+        const extended=item.qty*cost;
+        const hasQty=item.qty>0;
+        h+=`<tr class="${hasQty?'has-qty':''}" data-item-id="${item.id}">
+          <td class="row-label">${item.name}</td>
+          <td class="unit-col">${item.unit}</td>
+          <td style="text-align:right"><input type="number" class="editable-qty" value="${item.qty}" min="0" step="any" data-cat="${catKey}" data-id="${item.id}" data-field="qty" onchange="updateMaterialField(this)"></td>
+          <td style="text-align:right"><input type="number" class="editable-qty" value="${cost.toFixed(2)}" min="0" step="0.01" data-cat="${catKey}" data-id="${item.id}" data-field="cost" onchange="updateMaterialField(this)"></td>
+          <td class="ext-col" id="ext_${item.id}">${fmtC(extended)}</td>
+        </tr>`;
       });
-      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totD)} ft</span><span class="cst">${fmtC(totDC)}</span></div></div>`;
-      budget+=totDC;
 
-      const cabs=Math.round(structures.features.filter(f=>f.properties.type==='cabinet').length*ratio);
-      const hhs=hhQ-cabs;
-      const hhCost=hhs*gc('hh_std')+cabs*gc('ftth_olt');
-      h+='<div class="card"><div class="card-title">Structures</div>';
-      h+=`<div class="card-row"><span class="lbl">Handholes</span><input type="number" class="editable-qty" value="${hhs}" data-qkey="${q.Quarter}" data-mkey="handholes" onchange="updateQtyVal(this)"><span class="cst">${fmtC(hhs*gc('hh_std'))}</span></div>`;
-      h+=`<div class="card-row"><span class="lbl">OLT Cabinets</span><input type="number" class="editable-qty" value="${cabs}" data-qkey="${q.Quarter}" data-mkey="cabinets" onchange="updateQtyVal(this)"><span class="cst">${fmtC(cabs*gc('ftth_olt'))}</span></div>`;
-      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(hhQ)}</span><span class="cst">${fmtC(hhCost)}</span></div></div>`;
-      budget+=hhCost;
-
-      h+=hardwareCard('Connectors',[{l:'SC/APC',k:'conn_scapc',n:0},{l:'LC/APC',k:'conn_lcapc',n:0},{l:'Pre-conn',k:'conn_preconn',n:0}]);
-      h+=hardwareCard('Splice & Closures',[{l:'Closure',k:'splice_closure',n:0},{l:'Tray',k:'splice_tray',n:0},{l:'Terminal',k:'ftth_terminal',n:0}]);
-
-    } else {
-      h+='<div class="card"><div class="card-title">Conduit</div>';
-      let totD=0,totDC=0;
-      cols.ducts.forEach(d=>{
-        let v=parseFloat(q[d.key]||0);v*=(1+waste);
-        const cost=v*gc('duct_'+d.ways);totD+=v;totDC+=cost;
-        h+=`<div class="card-row"><span class="lbl">${d.label}</span><input type="number" class="editable-qty" value="${Math.round(v)}" data-qkey="${q.Quarter}" data-mkey="${d.key}" onchange="updateQtyVal(this)"> ft<span class="cst">${fmtC(cost)}</span></div>`;
-      });
-      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totD)} ft</span><span class="cst">${fmtC(totDC)}</span></div></div>`;
-      budget+=totDC;
-
-      h+='<div class="card"><div class="card-title">Fiber</div>';
-      let totF=0,totFC=0;
-      cols.fibers.forEach(f=>{
-        const v=parseFloat(q[f.key]||0);const cost=v*gc('fiber_'+f.count);totF+=v;totFC+=cost;
-        h+=`<div class="card-row"><span class="lbl">${f.label}</span><input type="number" class="editable-qty" value="${Math.round(v)}" data-qkey="${q.Quarter}" data-mkey="${f.key}" onchange="updateQtyVal(this)"> ft<span class="cst">${fmtC(cost)}</span></div>`;
-      });
-      if(slackQ){totF+=slackQ;h+=`<div class="card-row"><span class="lbl">Slack</span><span class="val">${fmt(slackQ)} ft</span><span class="cst">--</span></div>`;}
-      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totF)} ft</span><span class="cst">${fmtC(totFC)}</span></div></div>`;
-      budget+=totFC;
-
-      const hhLg=Math.round(totalHH*.0075);
-      const hhSm=hhQ-(hhLg>0?hhLg:0);
-      const hhCost=hhLg*gc('hh_lg')+hhSm*gc('hh_sm');
-      h+='<div class="card"><div class="card-title">Handholes</div>';
-      h+=`<div class="card-row"><span class="lbl">Large</span><input type="number" class="editable-qty" value="${hhLg}" data-qkey="${q.Quarter}" data-mkey="hh_lg" onchange="updateQtyVal(this)"><span class="cst">${fmtC(hhLg*gc('hh_lg'))}</span></div>`;
-      h+=`<div class="card-row"><span class="lbl">Standard</span><input type="number" class="editable-qty" value="${hhSm}" data-qkey="${q.Quarter}" data-mkey="hh_sm" onchange="updateQtyVal(this)"><span class="cst">${fmtC(hhSm*gc('hh_sm'))}</span></div>`;
-      h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(hhQ)}</span><span class="cst">${fmtC(hhCost)}</span></div></div>`;
-      budget+=hhCost;
-
-      h+=hardwareCard('Splice Cases',[{l:'450B',k:'sp_450b',n:0},{l:'450C',k:'sp_450c',n:0},{l:'450D',k:'sp_450d',n:0}]);
+      h+=`</tbody>
+        <tfoot><tr>
+          <td colspan="4" style="text-align:right;padding-right:12px;font-weight:700;">Category Subtotal</td>
+          <td style="text-align:right;color:var(--accent);font-weight:700;" id="subtotal_${catKey}">${fmtC(catSubtotal)}</td>
+        </tr></tfoot>
+      </table></div>`;
     }
 
-    h+='</div>';
-    qCard.innerHTML=h;div.appendChild(qCard);
-
-    const bar=document.createElement('div');bar.className='budget-bar';
-    bar.innerHTML=`<span class="budget-label">Quarter Budget</span><span class="budget-amount">${fmtC(budget)}</span>`;
-    div.appendChild(bar);
+    section.innerHTML=h;
+    container.appendChild(section);
   });
+
+  const bar=document.getElementById('budgetSummary');
+  bar.innerHTML=`<div class="total-budget-bar" style="margin-top:24px;">
+    <span class="budget-label">Grand Total Project Budget</span>
+    <span class="budget-amount" id="grandTotal">${fmtC(grandTotal)}</span>
+  </div>`;
 }
 
-function updateQtyVal(el){
-  // Material quantities are directly editable - recalculate costs
-  buildTotalMaterials();
+function toggleCat(catKey){
+  collapsedCats[catKey]=!collapsedCats[catKey];
+  buildDash();
 }
 
-function hardwareCard(title,items){
-  let h=`<div class="card"><div class="card-title">${title}</div>`;
-  let tot=0,totC=0;
-  items.forEach(it=>{
-    const c=it.n*gc(it.k);tot+=it.n;totC+=c;
-    h+=`<div class="card-row"><span class="lbl">${it.l}</span><input type="number" class="editable-qty" value="${it.n}" data-mkey="${it.k}" onchange="updateQtyVal(this)"><span class="cst">${fmtC(c)}</span></div>`;
-  });
-  h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${tot}</span><span class="cst">${fmtC(totC)}</span></div></div>`;
-  return h;
+function updateMaterialField(el){
+  const catKey=el.dataset.cat;
+  const itemId=el.dataset.id;
+  const field=el.dataset.field;
+  const value=parseFloat(el.value)||0;
+  const item=projectMaterials[catKey]?.items.find(it=>it.id===itemId);
+  if(!item)return;
+  if(field==='qty') item.qty=value;
+  else if(field==='cost') item.currentCost=value;
+
+  const cost=item.currentCost!==undefined?item.currentCost:item.defaultCost;
+  const extended=item.qty*cost;
+  const extEl=document.getElementById('ext_'+item.id);
+  if(extEl) extEl.textContent=fmtC(extended);
+
+  // Update row highlight
+  const row=el.closest('tr');
+  if(row){ row.classList.toggle('has-qty',item.qty>0); }
+
+  // Recalculate category subtotal
+  let catSub=0;
+  projectMaterials[catKey].items.forEach(it=>{catSub+=it.qty*(it.currentCost!==undefined?it.currentCost:it.defaultCost);});
+  const subEl=document.getElementById('subtotal_'+catKey);
+  if(subEl) subEl.textContent=fmtC(catSub);
+
+  // Recalculate grand total
+  let gt=0;
+  Object.values(projectMaterials).forEach(cat=>{cat.items.forEach(it=>{gt+=it.qty*(it.currentCost!==undefined?it.currentCost:it.defaultCost);});});
+  const gtEl=document.getElementById('grandTotal');
+  if(gtEl) gtEl.textContent=fmtC(gt);
 }
 
-function buildTotalMaterials(){
-  const div=document.getElementById('totalMaterials');div.innerHTML='';
-  const cols=getCols();
-  const waste=document.getElementById('chkWaste').checked?parseFloat(document.getElementById('selWaste').value):0;
-  const slack=document.getElementById('chkSlack').checked?structures.features.length*parseInt(document.getElementById('selSlack').value):0;
-  const totalHH=structures.features.length;
-
-  const section=document.createElement('div');section.className='quarter-card';
-  let h='<div class="quarter-grid">';
-  let budget=0;
-
-  if(pType==='ftth'){
-    h+='<div class="card"><div class="card-title">Total Cable</div>';
-    let totC=0,totCC=0;
-    if(cols.cables.length){
-      cols.cables.forEach(c=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[c.key]||0);});const ck='cable_'+c.name.toLowerCase().replace(/[^a-z]/g,'_');const cost=v*gc(ck);totC+=v;totCC+=cost;h+=`<div class="card-row"><span class="lbl">${c.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
-    } else {
-      cols.fibers.forEach(f=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[f.key]||0);});const cost=v*gc('fiber_'+f.count);totC+=v;totCC+=cost;h+=`<div class="card-row"><span class="lbl">${f.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
-    }
-    if(slack){totC+=slack;h+=`<div class="card-row"><span class="lbl">Slack</span><span class="val">${fmt(slack)} ft</span><span class="cst">--</span></div>`;}
-    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totC)} ft</span><span class="cst">${fmtC(totCC)}</span></div></div>`;
-    budget+=totCC;
-
-    h+='<div class="card"><div class="card-title">Total Conduit / Duct</div>';
-    let totD=0,totDC=0;
-    const ductKeys=cols.ducts.length?cols.ducts.map(d=>({label:d.label,key:d.key,ck:'duct_'+d.label.toLowerCase().replace(/[^a-z0-9]/g,'_')})):[{label:'Microduct',key:'Microduct (ft)',ck:'duct_microduct'},{label:'Innerduct',key:'Innerduct (ft)',ck:'duct_innerduct'}];
-    ductKeys.forEach(d=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[d.key]||0);});v*=(1+waste);const cost=v*gc(d.ck);totD+=v;totDC+=cost;h+=`<div class="card-row"><span class="lbl">${d.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
-    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totD)} ft</span><span class="cst">${fmtC(totDC)}</span></div></div>`;
-    budget+=totDC;
-
-    const cabs=structures.features.filter(f=>f.properties.type==='cabinet').length;
-    const hhs=totalHH-cabs;
-    const hhCost=hhs*gc('hh_std')+cabs*gc('ftth_olt');
-    h+='<div class="card"><div class="card-title">Total Structures</div>';
-    h+=`<div class="card-row"><span class="lbl">Handholes</span><span class="val">${fmt(hhs)}</span><span class="cst">${fmtC(hhs*gc('hh_std'))}</span></div>`;
-    h+=`<div class="card-row"><span class="lbl">OLT Cabinets</span><span class="val">${cabs}</span><span class="cst">${fmtC(cabs*gc('ftth_olt'))}</span></div>`;
-    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totalHH)}</span><span class="cst">${fmtC(hhCost)}</span></div></div>`;
-    budget+=hhCost;
-
-    h+=hardwareCard('Total Connectors',[{l:'SC/APC',k:'conn_scapc',n:0},{l:'LC/APC',k:'conn_lcapc',n:0},{l:'Pre-conn',k:'conn_preconn',n:0}]);
-    h+=hardwareCard('Total Splice',[{l:'Closure',k:'splice_closure',n:0},{l:'Tray',k:'splice_tray',n:0},{l:'Terminal',k:'ftth_terminal',n:0}]);
-
-  } else {
-    h+='<div class="card"><div class="card-title">Total Conduit</div>';
-    let totD=0,totDC=0;
-    cols.ducts.forEach(d=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[d.key]||0);});v*=(1+waste);const cost=v*gc('duct_'+d.ways);totD+=v;totDC+=cost;h+=`<div class="card-row"><span class="lbl">${d.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
-    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totD)} ft</span><span class="cst">${fmtC(totDC)}</span></div></div>`;
-    budget+=totDC;
-
-    h+='<div class="card"><div class="card-title">Total Fiber</div>';
-    let totF=0,totFC=0;
-    cols.fibers.forEach(f=>{let v=0;quarterly.forEach(q=>{v+=parseFloat(q[f.key]||0);});const cost=v*gc('fiber_'+f.count);totF+=v;totFC+=cost;h+=`<div class="card-row"><span class="lbl">${f.label}</span><span class="val">${fmt(v)} ft</span><span class="cst">${fmtC(cost)}</span></div>`;});
-    if(slack){totF+=slack;h+=`<div class="card-row"><span class="lbl">Slack</span><span class="val">${fmt(slack)} ft</span><span class="cst">--</span></div>`;}
-    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totF)} ft</span><span class="cst">${fmtC(totFC)}</span></div></div>`;
-    budget+=totFC;
-
-    const hhLg=Math.round(totalHH*.0075),hhSm=totalHH-hhLg;
-    const hhCost=hhLg*gc('hh_lg')+hhSm*gc('hh_sm');
-    h+='<div class="card"><div class="card-title">Total Handholes</div>';
-    h+=`<div class="card-row"><span class="lbl">Large</span><span class="val">${hhLg}</span><span class="cst">${fmtC(hhLg*gc('hh_lg'))}</span></div>`;
-    h+=`<div class="card-row"><span class="lbl">Standard</span><span class="val">${fmt(hhSm)}</span><span class="cst">${fmtC(hhSm*gc('hh_sm'))}</span></div>`;
-    h+=`<div class="card-row card-total"><span class="lbl">Total</span><span class="val">${fmt(totalHH)}</span><span class="cst">${fmtC(hhCost)}</span></div></div>`;
-    budget+=hhCost;
-
-    h+=hardwareCard('Total Splice',[{l:'450B',k:'sp_450b',n:0},{l:'450C',k:'sp_450c',n:0},{l:'450D',k:'sp_450d',n:0}]);
-  }
-
-  h+='</div>';
-  section.innerHTML=h;div.appendChild(section);
-
-  const bar=document.createElement('div');bar.className='total-budget-bar';
-  bar.innerHTML=`<span class="budget-label">Total Project Budget</span><span class="budget-amount">${fmtC(budget)}</span>`;
-  div.appendChild(bar);
-}
-
-// ═══════════ COMPARE ═══════════
+// =========== COMPARE ===========
 function buildCompare(){
-  const div = document.getElementById('compareContent');
-
-  if(dataSources.length < 1){
-    div.innerHTML = '<p style="color:var(--text-muted);font-size:14px;">Upload files to see data here. Add multiple sources to compare materials across them.</p>';
+  const div=document.getElementById('compareContent');
+  if(dataSources.length<1){
+    div.innerHTML='<p style="color:var(--text-muted);font-size:14px;">Upload files to see data here. Add multiple sources to compare materials across them.</p>';
     return;
   }
-
-  // Collect all unique material keys across all sources
-  const allKeys = new Set();
-  dataSources.forEach(src=>{
-    Object.keys(src.materials).forEach(k=>allKeys.add(k));
-  });
-
-  const srcColors = ['#2563eb','#059669','#d97706','#7c3aed','#dc2626','#0d9488','#e67e22','#e91e63'];
-
-  let h = '';
+  const srcColors=['#2563eb','#059669','#d97706','#7c3aed','#dc2626','#0d9488','#e67e22','#e91e63'];
+  let h='';
 
   // Source summary cards
-  h += '<div class="cost-grid" style="margin-bottom:24px">';
+  h+='<div class="cost-grid" style="margin-bottom:24px">';
   dataSources.forEach((src,i)=>{
-    const matCount = Object.keys(src.materials).length;
-    const color = srcColors[i % srcColors.length];
-    h += `<div class="card">
+    const matCount=Object.keys(src.materials).length;
+    const color=srcColors[i%srcColors.length];
+    h+=`<div class="card">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;"></div>
         <div class="card-title" style="margin:0;">${src.name}</div>
@@ -1407,50 +1406,74 @@ function buildCompare(){
       <div class="card-row"><span class="lbl">Material Items</span><span class="val">${matCount}</span></div>
     </div>`;
   });
-  h += '</div>';
+  h+='</div>';
 
-  if(dataSources.length >= 2){
-    // Comparison table
-    h += '<table class="compare-table"><thead><tr><th>Material</th>';
-    dataSources.forEach((src,i)=>{
-      const color = srcColors[i % srcColors.length];
-      h += `<th style="text-align:right"><span class="source-chip" style="background:${color}11;color:${color}">${src.name.substring(0,20)}</span></th>`;
-    });
-    if(dataSources.length===2) h += '<th style="text-align:right">Difference</th>';
-    h += '</tr></thead><tbody>';
-
-    [...allKeys].sort().forEach(key=>{
-      h += `<tr><td class="row-label">${key}</td>`;
-      const vals = dataSources.map(src=>src.materials[key]||0);
-      vals.forEach(v=>{
-        h += `<td class="src-val">${v>0?fmt(v):'—'}</td>`;
+  // Build comparison by catalog category
+  Object.entries(DEFAULT_MATERIALS).forEach(([catKey,category])=>{
+    const rowsHtml=[];
+    category.items.forEach(item=>{
+      const vals=dataSources.map(src=>{
+        let srcQty=0;
+        Object.entries(src.materials).forEach(([key,qty])=>{
+          if(resolveToMaterialId(key)===item.id) srcQty+=qty;
+        });
+        return srcQty;
       });
-      if(dataSources.length===2){
-        const diff = vals[1]-vals[0];
-        const cls = diff>0?'diff-pos':diff<0?'diff-neg':'diff-zero';
-        h += `<td class="diff-val ${cls}">${diff>0?'+':''}${diff!==0?fmt(diff):'—'}</td>`;
-      }
-      h += '</tr>';
+      const total=vals.reduce((s,v)=>s+v,0);
+      if(total===0) return;
+      let row=`<tr><td class="row-label">${item.name}</td><td style="color:var(--text-muted);font-size:11px">${item.unit}</td>`;
+      vals.forEach(v=>{ row+=`<td class="src-val">${v>0?fmt(v):'\u2014'}</td>`; });
+      row+=`<td class="src-val" style="font-weight:700">${fmt(total)}</td></tr>`;
+      rowsHtml.push(row);
     });
 
-    h += '</tbody></table>';
-  } else {
-    // Single source detail
-    const src = dataSources[0];
-    h += '<table class="compare-table"><thead><tr><th>Material</th><th style="text-align:right">Value</th></tr></thead><tbody>';
-    Object.entries(src.materials).sort(([a],[b])=>a.localeCompare(b)).forEach(([k,v])=>{
-      h += `<tr><td class="row-label">${k}</td><td class="src-val">${fmt(v)}</td></tr>`;
+    if(rowsHtml.length===0) return;
+
+    h+=`<div class="dash-section">
+      <div class="dash-section-title" style="color:${category.color}">${category.label}<span class="line"></span></div>
+      <table class="compare-table"><thead><tr><th>Material</th><th>Unit</th>`;
+    dataSources.forEach((src,i)=>{ h+=`<th style="text-align:right"><span class="source-chip" style="background:${srcColors[i%srcColors.length]}11;color:${srcColors[i%srcColors.length]}">${src.name.substring(0,20)}</span></th>`; });
+    h+='<th style="text-align:right;font-weight:700">Total</th></tr></thead><tbody>';
+    h+=rowsHtml.join('');
+    h+='</tbody></table></div>';
+  });
+
+  // Unmapped materials
+  const allKeys=new Set();
+  dataSources.forEach(src=>Object.keys(src.materials).forEach(k=>allKeys.add(k)));
+  const unmappedKeys=[...allKeys].filter(k=>!resolveToMaterialId(k)&&k!=='Structures');
+  if(unmappedKeys.length){
+    h+=`<div class="dash-section">
+      <div class="dash-section-title" style="color:var(--text-muted)">Unmapped / Custom Materials<span class="line"></span></div>
+      <table class="compare-table"><thead><tr><th>Material</th><th></th>`;
+    dataSources.forEach((src,i)=>{ h+=`<th style="text-align:right">${src.name.substring(0,20)}</th>`; });
+    h+='<th style="text-align:right;font-weight:700">Total</th></tr></thead><tbody>';
+    unmappedKeys.sort().forEach(key=>{
+      const vals=dataSources.map(src=>src.materials[key]||0);
+      const total=vals.reduce((s,v)=>s+v,0);
+      h+=`<tr><td class="row-label">${key}</td><td></td>`;
+      vals.forEach(v=>{h+=`<td class="src-val">${v>0?fmt(v):'\u2014'}</td>`;});
+      h+=`<td class="src-val" style="font-weight:700">${fmt(total)}</td></tr>`;
     });
-    h += '</tbody></table>';
-    h += '<p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Add more files to see a side-by-side comparison.</p>';
+    h+='</tbody></table></div>';
   }
 
-  div.innerHTML = h;
+  if(dataSources.length<2){
+    h+='<p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Add more files to see a side-by-side comparison.</p>';
+  }
+
+  div.innerHTML=h;
 }
 
-// ═══════════ EXPORT ═══════════
+// =========== EXPORT ===========
 function doExport(){
-  const data={routes,structures,quarterly,dataSources:dataSources.map(s=>({name:s.name,type:s.type,materials:s.materials})),projectType:pType,projectName:document.getElementById('projName').value};
+  const data={
+    projectName:document.getElementById('projName').value,
+    projectType:pType,
+    materials:projectMaterials,
+    routes,structures,quarterly,
+    dataSources:dataSources.map(s=>({name:s.name,type:s.type,materials:s.materials}))
+  };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=(document.getElementById('projName').value||'project')+'-export.json';a.click();
@@ -1465,14 +1488,14 @@ async function loadDropbox(){
   try{
     const resp=await fetch(url);const blob=await resp.blob();
     const name=url.split('/').pop().split('?')[0]||'file';
-    const f = new File([blob],name);
+    const f=new File([blob],name);
     await processFile(f);
     mergeAllSources();
     render();
   }catch(err){toast('Dropbox error: '+err.message,'error');}
 }
 
-// ═══════════ EVENTS ═══════════
+// =========== EVENTS ===========
 const dz=document.getElementById('dropzone');
 dz.addEventListener('click',()=>document.getElementById('fileInput').click());
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
@@ -1480,18 +1503,14 @@ dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');queueFiles(e.dataTransfer.files);});
 document.getElementById('fileInput').addEventListener('change',e=>{queueFiles(e.target.files);e.target.value='';});
 
-// Global drag/drop after onboarding
 document.body.addEventListener('dragover',e=>e.preventDefault());
 document.body.addEventListener('drop',e=>{
   e.preventDefault();
-  if(!document.getElementById('onboard').classList.contains('hidden')){
-    queueFiles(e.dataTransfer.files);
-  } else {
-    for(const f of e.dataTransfer.files) addMoreFiles([f]);
-  }
+  if(!document.getElementById('onboard').classList.contains('hidden')) queueFiles(e.dataTransfer.files);
+  else for(const f of e.dataTransfer.files) addMoreFiles([f]);
 });
 
-// ═══════════ INIT ═══════════
+// =========== INIT ===========
 initMap();
 </script>
 </body>
