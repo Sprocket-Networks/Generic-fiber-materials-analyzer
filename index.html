@@ -426,44 +426,56 @@ select.sidebar-select {
 .google-sign-in-btn img { width:20px; height:20px; }
 .login-error { color:var(--red); font-size:13px; margin-top:12px; display:none; }
 
-/* =========== PROJECT PICKER =========== */
-.project-picker-overlay {
-  position:fixed; inset:0; background:rgba(240,242,245,0.97);
-  display:flex; align-items:center; justify-content:center;
-  z-index:1050; backdrop-filter:blur(8px);
+/* =========== PROJECTS DROPDOWN =========== */
+.projects-dropdown-wrap { position:relative; }
+.projects-dropdown-btn {
+  font-size:12px; padding:6px 12px; border-radius:var(--radius-sm); cursor:pointer;
+  border:1px solid var(--border); background:var(--surface); color:var(--text);
+  font-family:'Inter',sans-serif; font-weight:600; display:flex; align-items:center; gap:4px;
 }
-.project-picker-overlay.hidden { display:none; }
-.project-picker-card {
+.projects-dropdown-btn:hover { background:var(--surface2); border-color:var(--text-muted); }
+.projects-dropdown-btn::after { content:'▾'; font-size:10px; color:var(--text-muted); }
+.projects-dropdown {
+  display:none; position:absolute; top:calc(100% + 6px); right:0;
   background:var(--surface); border:1px solid var(--border);
-  border-radius:16px; padding:36px; text-align:center;
-  max-width:700px; width:95%; max-height:85vh; box-shadow:var(--shadow-md);
-  display:flex; flex-direction:column;
+  border-radius:var(--radius-sm); box-shadow:var(--shadow-md);
+  min-width:340px; max-width:420px; max-height:400px;
+  overflow-y:auto; z-index:1100; padding:8px;
 }
-.project-picker-card h2 { font-size:22px; font-weight:700; margin-bottom:4px; }
-.project-picker-card .subtitle { color:var(--text-dim); font-size:13px; margin-bottom:16px; }
-.project-list { overflow-y:auto; flex:1; margin:8px 0 16px; text-align:left; }
-.project-list-item {
-  display:flex; align-items:center; gap:12px;
-  padding:14px 16px; border:1px solid var(--border-light);
-  border-radius:var(--radius-sm); margin-bottom:8px;
-  cursor:pointer; transition:all .15s; background:var(--surface);
+.projects-dropdown.open { display:block; }
+.projects-dropdown-header {
+  font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+  color:var(--text-muted); padding:6px 8px 4px; border-bottom:1px solid var(--border-light);
+  margin-bottom:4px;
 }
-.project-list-item:hover { border-color:var(--accent); background:var(--accent-bg,#f0f7ff); }
-.project-list-item .proj-meta { flex:1; }
-.project-list-item .proj-title { font-weight:600; font-size:14px; color:var(--text); }
-.project-list-item .proj-date { font-size:11px; color:var(--text-muted); margin-top:2px; }
-.project-list-item .proj-owner { font-size:10px; color:var(--text-muted); }
-.project-list-item .proj-shared {
-  font-size:10px; font-weight:600; text-transform:uppercase;
-  padding:2px 8px; border-radius:4px;
-  background:#ecfdf5; color:#059669;
+.proj-dropdown-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 10px; border-radius:var(--radius-sm);
+  cursor:pointer; transition:background .12s;
 }
-.project-list-item .proj-delete {
+.proj-dropdown-item:hover { background:var(--accent-bg,#f0f7ff); }
+.proj-dropdown-item.active { background:var(--accent-bg,#f0f7ff); border-left:3px solid var(--accent); }
+.proj-dropdown-item .proj-meta { flex:1; min-width:0; }
+.proj-dropdown-item .proj-title { font-weight:600; font-size:13px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.proj-dropdown-item .proj-date { font-size:10px; color:var(--text-muted); margin-top:1px; }
+.proj-dropdown-item .proj-owner { font-size:10px; color:var(--text-muted); }
+.proj-dropdown-item .proj-shared {
+  font-size:9px; font-weight:600; text-transform:uppercase;
+  padding:1px 6px; border-radius:3px;
+  background:#ecfdf5; color:#059669; flex-shrink:0;
+}
+.proj-dropdown-item .proj-delete {
   cursor:pointer; color:var(--text-muted); border:none; background:none;
-  font-size:18px; padding:4px 8px; transition:color .15s; font-family:'Inter',sans-serif;
+  font-size:16px; padding:2px 6px; transition:color .15s; font-family:'Inter',sans-serif; flex-shrink:0;
 }
-.project-list-item .proj-delete:hover { color:var(--red); }
-.project-empty { color:var(--text-muted); font-size:13px; padding:32px 0; }
+.proj-dropdown-item .proj-delete:hover { color:var(--red); }
+.proj-dropdown-create {
+  display:flex; align-items:center; gap:6px; padding:10px; border-radius:var(--radius-sm);
+  cursor:pointer; color:var(--accent); font-weight:600; font-size:13px;
+  border-top:1px solid var(--border-light); margin-top:4px; transition:background .12s;
+}
+.proj-dropdown-create:hover { background:var(--accent-bg,#f0f7ff); }
+.proj-dropdown-empty { color:var(--text-muted); font-size:12px; padding:16px 8px; text-align:center; }
 
 /* =========== USER INFO (TOPNAV) =========== */
 .user-info { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-dim); }
@@ -485,10 +497,7 @@ select.sidebar-select {
 .share-toggle { display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer; }
 .share-toggle input[type="checkbox"] { cursor:pointer; }
 
-/* =========== BACK TO PROJECTS BTN =========== */
-.btn-back { font-size:12px; padding:6px 12px; border-radius:var(--radius-sm); cursor:pointer;
-  border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:'Inter',sans-serif; }
-.btn-back:hover { background:var(--surface2); border-color:var(--text-muted); }
+/* dropdown click-away close */
 </style>
 </head>
 <body>
@@ -505,18 +514,6 @@ select.sidebar-select {
     </button>
     <div class="login-error" id="loginError"></div>
     <p style="margin-top:16px;color:var(--text-muted);font-size:11px;">Restricted to @sprocketnetworks.com accounts</p>
-  </div>
-</div>
-
-<!-- PROJECT PICKER -->
-<div class="project-picker-overlay hidden" id="projectPicker">
-  <div class="project-picker-card">
-    <h2>Your Projects</h2>
-    <p class="subtitle" id="pickerSubtitle">Select a project to open or create a new one</p>
-    <div class="project-list" id="projectList">
-      <p class="project-empty">Loading projects...</p>
-    </div>
-    <button class="analyze-btn" onclick="createNewProject()">+ Create New Project</button>
   </div>
 </div>
 
@@ -563,7 +560,14 @@ select.sidebar-select {
 <!-- TOP NAV -->
 <nav class="topnav">
   <div class="topnav-brand"><div class="icon">F</div>Fiber - FTTX Materials Analyzer</div>
-  <button class="btn-back" onclick="showProjectPicker()" id="btnBackToProjects" style="display:none">&#8592; Projects</button>
+  <div class="projects-dropdown-wrap" id="projectsDropdownWrap" style="display:none">
+    <button class="projects-dropdown-btn" onclick="toggleProjectsDropdown()" id="projectsDropdownBtn">Projects</button>
+    <div class="projects-dropdown" id="projectsDropdown">
+      <div class="projects-dropdown-header">Your Projects</div>
+      <div id="projectList"></div>
+      <div class="proj-dropdown-create" onclick="createNewProject()">+ Create New Project</div>
+    </div>
+  </div>
   <div class="topnav-tabs">
     <button class="topnav-tab active" onclick="switchView('map')">Map</button>
     <button class="topnav-tab" onclick="switchView('dash')">Dashboard</button>
@@ -714,16 +718,18 @@ auth.onAuthStateChanged(user => {
     document.getElementById('userInfo').style.display = 'flex';
     document.getElementById('userAvatar').src = user.photoURL || '';
     document.getElementById('userName').textContent = user.displayName || user.email;
-    document.getElementById('btnBackToProjects').style.display = '';
-    showProjectPicker();
+    document.getElementById('projectsDropdownWrap').style.display = '';
+    document.getElementById('btnSave').style.display = '';
+    document.getElementById('shareToggle').style.display = '';
+    document.getElementById('saveIndicator').style.display = '';
+    loadProjectsList();
   } else {
     currentUser = null;
     currentProjectId = null;
     currentProjectOwnerId = null;
     document.getElementById('loginOverlay').classList.remove('hidden');
-    document.getElementById('projectPicker').classList.add('hidden');
     document.getElementById('userInfo').style.display = 'none';
-    document.getElementById('btnBackToProjects').style.display = 'none';
+    document.getElementById('projectsDropdownWrap').style.display = 'none';
     document.getElementById('btnSave').style.display = 'none';
     document.getElementById('shareToggle').style.display = 'none';
     document.getElementById('saveIndicator').style.display = 'none';
@@ -749,14 +755,28 @@ function showLoginError(msg) {
 }
 
 // =========== PROJECT PICKER ===========
-async function showProjectPicker() {
-  document.getElementById('projectPicker').classList.remove('hidden');
-  document.getElementById('onboard').classList.add('hidden');
-  currentProjectId = null;
-  currentProjectOwnerId = null;
+function toggleProjectsDropdown() {
+  const dd = document.getElementById('projectsDropdown');
+  if (dd.classList.contains('open')) {
+    dd.classList.remove('open');
+  } else {
+    loadProjectsList();
+    dd.classList.add('open');
+  }
+}
 
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('projectsDropdownWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('projectsDropdown').classList.remove('open');
+  }
+});
+
+async function loadProjectsList() {
+  if (!currentUser) return;
   const list = document.getElementById('projectList');
-  list.innerHTML = '<p class="project-empty">Loading...</p>';
+  list.innerHTML = '<div style="padding:12px;color:var(--text-muted);font-size:12px;">Loading...</div>';
 
   try {
     const ownQuery = db.collection('projects')
@@ -789,7 +809,7 @@ async function showProjectPicker() {
     });
 
     if (projects.length === 0) {
-      list.innerHTML = '<p class="project-empty">No projects yet. Create your first one below.</p>';
+      list.innerHTML = '<div class="proj-dropdown-empty">No projects yet</div>';
       return;
     }
 
@@ -798,17 +818,18 @@ async function showProjectPicker() {
       const sharedBadge = p.shared ? '<span class="proj-shared">Shared</span>' : '';
       const ownerInfo = p.isOwner ? '' : `<span class="proj-owner">by ${p.ownerName || p.ownerEmail || 'team member'}</span>`;
       const deleteBtn = p.isOwner ? `<button class="proj-delete" onclick="event.stopPropagation();deleteProject('${p.id}')" title="Delete">&times;</button>` : '';
-      return `<div class="project-list-item" onclick="openProject('${p.id}')">
+      const activeClass = p.id === currentProjectId ? ' active' : '';
+      return `<div class="proj-dropdown-item${activeClass}" onclick="openProject('${p.id}')">
         <div class="proj-meta">
           <div class="proj-title">${escHtml(p.name || 'Untitled Project')} ${ownerInfo}</div>
-          <div class="proj-date">${date ? 'Last modified: '+date : ''} ${p.dataSources?.length ? '&middot; '+p.dataSources.length+' source(s)' : ''}</div>
+          <div class="proj-date">${date ? date : ''} ${p.dataSources?.length ? '&middot; '+p.dataSources.length+' source(s)' : ''}</div>
         </div>
         ${sharedBadge}
         ${deleteBtn}
       </div>`;
     }).join('');
   } catch (err) {
-    list.innerHTML = `<p style="color:var(--red);font-size:13px;">Error loading projects: ${err.message}</p>`;
+    list.innerHTML = `<div style="color:var(--red);font-size:12px;padding:8px;">Error: ${err.message}</div>`;
     console.error('Project list error:', err);
   }
 }
@@ -816,7 +837,7 @@ async function showProjectPicker() {
 function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
 async function createNewProject() {
-  document.getElementById('projectPicker').classList.add('hidden');
+  document.getElementById('projectsDropdown').classList.remove('open');
 
   // Reset all state
   routes = { type:'FeatureCollection', features:[] };
@@ -871,18 +892,18 @@ async function createNewProject() {
   } catch (err) {
     toast('Error creating project: ' + err.message, 'error');
     console.error(err);
-    showProjectPicker();
+    loadProjectsList();
   }
 }
 
 async function openProject(projectId) {
-  document.getElementById('projectPicker').classList.add('hidden');
+  document.getElementById('projectsDropdown').classList.remove('open');
 
   try {
     const doc = await db.collection('projects').doc(projectId).get();
     if (!doc.exists) {
       toast('Project not found', 'error');
-      showProjectPicker();
+      loadProjectsList();
       return;
     }
 
@@ -931,7 +952,7 @@ async function openProject(projectId) {
   } catch (err) {
     toast('Error opening project: ' + err.message, 'error');
     console.error(err);
-    showProjectPicker();
+    loadProjectsList();
   }
 }
 
@@ -940,7 +961,7 @@ async function deleteProject(projectId) {
   try {
     await db.collection('projects').doc(projectId).delete();
     toast('Project deleted', 'success');
-    showProjectPicker();
+    loadProjectsList();
   } catch (err) {
     toast('Error: ' + err.message, 'error');
   }
