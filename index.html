@@ -9,6 +9,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -396,9 +399,126 @@ select.sidebar-select {
 }
 .leaflet-popup-tip { background:var(--surface); }
 .leaflet-popup-content { font-size:12px; font-family:'Inter',sans-serif; }
+
+/* =========== LOGIN OVERLAY =========== */
+.login-overlay {
+  position:fixed; inset:0; background:rgba(240,242,245,0.97);
+  display:flex; align-items:center; justify-content:center;
+  z-index:1100; backdrop-filter:blur(8px);
+}
+.login-overlay.hidden { display:none; }
+.login-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:48px; text-align:center;
+  max-width:440px; width:90%; box-shadow:var(--shadow-md);
+}
+.login-card h2 { font-size:22px; font-weight:700; margin-bottom:8px; }
+.login-card .subtitle { color:var(--text-dim); font-size:14px; margin-bottom:28px; }
+.google-sign-in-btn {
+  display:inline-flex; align-items:center; gap:12px;
+  padding:14px 24px; border-radius:var(--radius-sm);
+  font-size:14px; font-weight:600; cursor:pointer;
+  border:1px solid var(--border); background:var(--surface);
+  color:var(--text); transition:all .15s; width:100%; justify-content:center;
+  font-family:'Inter',sans-serif;
+}
+.google-sign-in-btn:hover { background:var(--surface2); border-color:var(--text-muted); }
+.google-sign-in-btn img { width:20px; height:20px; }
+.login-error { color:var(--red); font-size:13px; margin-top:12px; display:none; }
+
+/* =========== PROJECT PICKER =========== */
+.project-picker-overlay {
+  position:fixed; inset:0; background:rgba(240,242,245,0.97);
+  display:flex; align-items:center; justify-content:center;
+  z-index:1050; backdrop-filter:blur(8px);
+}
+.project-picker-overlay.hidden { display:none; }
+.project-picker-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:36px; text-align:center;
+  max-width:700px; width:95%; max-height:85vh; box-shadow:var(--shadow-md);
+  display:flex; flex-direction:column;
+}
+.project-picker-card h2 { font-size:22px; font-weight:700; margin-bottom:4px; }
+.project-picker-card .subtitle { color:var(--text-dim); font-size:13px; margin-bottom:16px; }
+.project-list { overflow-y:auto; flex:1; margin:8px 0 16px; text-align:left; }
+.project-list-item {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px; border:1px solid var(--border-light);
+  border-radius:var(--radius-sm); margin-bottom:8px;
+  cursor:pointer; transition:all .15s; background:var(--surface);
+}
+.project-list-item:hover { border-color:var(--accent); background:var(--accent-bg,#f0f7ff); }
+.project-list-item .proj-meta { flex:1; }
+.project-list-item .proj-title { font-weight:600; font-size:14px; color:var(--text); }
+.project-list-item .proj-date { font-size:11px; color:var(--text-muted); margin-top:2px; }
+.project-list-item .proj-owner { font-size:10px; color:var(--text-muted); }
+.project-list-item .proj-shared {
+  font-size:10px; font-weight:600; text-transform:uppercase;
+  padding:2px 8px; border-radius:4px;
+  background:#ecfdf5; color:#059669;
+}
+.project-list-item .proj-delete {
+  cursor:pointer; color:var(--text-muted); border:none; background:none;
+  font-size:18px; padding:4px 8px; transition:color .15s; font-family:'Inter',sans-serif;
+}
+.project-list-item .proj-delete:hover { color:var(--red); }
+.project-empty { color:var(--text-muted); font-size:13px; padding:32px 0; }
+
+/* =========== USER INFO (TOPNAV) =========== */
+.user-info { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-dim); }
+.user-avatar { width:28px; height:28px; border-radius:50%; border:1px solid var(--border); }
+.user-name { font-weight:500; }
+.sign-out-btn {
+  font-size:11px; color:var(--text-muted); cursor:pointer;
+  border:none; background:none; text-decoration:underline; font-family:'Inter',sans-serif;
+}
+.sign-out-btn:hover { color:var(--red); }
+
+/* =========== SAVE INDICATOR =========== */
+.save-indicator { font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:4px; }
+.save-indicator.saving { color:#d97706; }
+.save-indicator.saved { color:#059669; }
+.save-indicator.error { color:var(--red); }
+
+/* =========== SHARE TOGGLE =========== */
+.share-toggle { display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer; }
+.share-toggle input[type="checkbox"] { cursor:pointer; }
+
+/* =========== BACK TO PROJECTS BTN =========== */
+.btn-back { font-size:12px; padding:6px 12px; border-radius:var(--radius-sm); cursor:pointer;
+  border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:'Inter',sans-serif; }
+.btn-back:hover { background:var(--surface2); border-color:var(--text-muted); }
 </style>
 </head>
 <body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div style="font-size:48px;margin-bottom:16px;">&#128274;</div>
+    <h2>Fiber - FTTX Materials Analyzer</h2>
+    <p class="subtitle">Sign in with your Sprocket Networks Google account</p>
+    <button class="google-sign-in-btn" onclick="doGoogleSignIn()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Sign in with Google
+    </button>
+    <div class="login-error" id="loginError"></div>
+    <p style="margin-top:16px;color:var(--text-muted);font-size:11px;">Restricted to @sprocketnetworks.com accounts</p>
+  </div>
+</div>
+
+<!-- PROJECT PICKER -->
+<div class="project-picker-overlay hidden" id="projectPicker">
+  <div class="project-picker-card">
+    <h2>Your Projects</h2>
+    <p class="subtitle" id="pickerSubtitle">Select a project to open or create a new one</p>
+    <div class="project-list" id="projectList">
+      <p class="project-empty">Loading projects...</p>
+    </div>
+    <button class="analyze-btn" onclick="createNewProject()">+ Create New Project</button>
+  </div>
+</div>
 
 <!-- ONBOARDING -->
 <div class="onboard-overlay" id="onboard">
@@ -443,6 +563,7 @@ select.sidebar-select {
 <!-- TOP NAV -->
 <nav class="topnav">
   <div class="topnav-brand"><div class="icon">F</div>Fiber - FTTX Materials Analyzer</div>
+  <button class="btn-back" onclick="showProjectPicker()" id="btnBackToProjects" style="display:none">&#8592; Projects</button>
   <div class="topnav-tabs">
     <button class="topnav-tab active" onclick="switchView('map')">Map</button>
     <button class="topnav-tab" onclick="switchView('dash')">Dashboard</button>
@@ -450,19 +571,30 @@ select.sidebar-select {
   </div>
   <div class="topnav-spacer"></div>
   <div class="topnav-actions">
+    <span class="save-indicator" id="saveIndicator" style="display:none"><span id="saveText">Saved</span></span>
     <label class="btn">+ Files<input type="file" accept=".kmz,.kml,.csv,.xlsx,.xls,.pdf" multiple onchange="addMoreFiles(this.files);this.value=''"></label>
     <button class="btn" onclick="openDropbox()">Dropbox</button>
     <button class="btn" onclick="doExport()">Export</button>
+    <button class="btn" onclick="doSaveProject()" id="btnSave" style="display:none">Save</button>
+    <div class="user-info" id="userInfo" style="display:none">
+      <img class="user-avatar" id="userAvatar" src="" alt="">
+      <span class="user-name" id="userName"></span>
+      <button class="sign-out-btn" onclick="doSignOut()">Sign out</button>
+    </div>
   </div>
 </nav>
 
 <!-- PROJECT HEADER -->
 <div class="project-header">
   <div class="project-info">
-    <input class="project-name" id="projName" value="Fiber - FTTX Materials Analyzer" placeholder="Project Name">
-    <input class="project-sub" id="projSub" value="" placeholder="Subtitle / Company / Region">
+    <input class="project-name" id="projName" value="Fiber - FTTX Materials Analyzer" placeholder="Project Name" oninput="scheduleSave()">
+    <input class="project-sub" id="projSub" value="" placeholder="Subtitle / Company / Region" oninput="scheduleSave()">
   </div>
   <div class="project-badges">
+    <label class="share-toggle" id="shareToggle" style="display:none" title="Share with team">
+      <input type="checkbox" id="chkShared" onchange="toggleShared()">
+      <span id="shareLabel">Private</span>
+    </label>
     <span class="badge badge-ftth" id="badgeFTTH" style="display:none">FTTH</span>
     <span class="badge badge-backbone" id="badgeBackbone" style="display:none">Backbone</span>
     <span class="source-count" id="sourceCount" style="display:none">0 Sources</span>
@@ -548,6 +680,335 @@ select.sidebar-select {
 <div class="status-toast" id="toast"></div>
 
 <script>
+// =========== FIREBASE CONFIG ===========
+const firebaseConfig = {
+  apiKey: "AIzaSyANJOCdU-PSRC2e6Yu52CV6Vg6KSY4R-5Q",
+  authDomain: "fttx-materials-analyzer.firebaseapp.com",
+  projectId: "fttx-materials-analyzer",
+  storageBucket: "fttx-materials-analyzer.firebasestorage.app",
+  messagingSenderId: "597525932873",
+  appId: "1:597525932873:web:f32429128b016ee1c68898"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// =========== AUTH STATE ===========
+let currentUser = null;
+let currentProjectId = null;
+let currentProjectOwnerId = null;
+let saveTimeout = null;
+const ALLOWED_DOMAIN = 'sprocketnetworks.com';
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    const domain = user.email.split('@')[1];
+    if (domain !== ALLOWED_DOMAIN) {
+      auth.signOut();
+      showLoginError('Access restricted to @sprocketnetworks.com accounts');
+      return;
+    }
+    currentUser = user;
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('userInfo').style.display = 'flex';
+    document.getElementById('userAvatar').src = user.photoURL || '';
+    document.getElementById('userName').textContent = user.displayName || user.email;
+    document.getElementById('btnBackToProjects').style.display = '';
+    showProjectPicker();
+  } else {
+    currentUser = null;
+    currentProjectId = null;
+    currentProjectOwnerId = null;
+    document.getElementById('loginOverlay').classList.remove('hidden');
+    document.getElementById('projectPicker').classList.add('hidden');
+    document.getElementById('userInfo').style.display = 'none';
+    document.getElementById('btnBackToProjects').style.display = 'none';
+    document.getElementById('btnSave').style.display = 'none';
+    document.getElementById('shareToggle').style.display = 'none';
+    document.getElementById('saveIndicator').style.display = 'none';
+  }
+});
+
+function doGoogleSignIn() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ hd: ALLOWED_DOMAIN });
+  auth.signInWithPopup(provider).catch(err => {
+    showLoginError(err.message);
+  });
+}
+
+function doSignOut() {
+  auth.signOut();
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// =========== PROJECT PICKER ===========
+async function showProjectPicker() {
+  document.getElementById('projectPicker').classList.remove('hidden');
+  document.getElementById('onboard').classList.add('hidden');
+  currentProjectId = null;
+  currentProjectOwnerId = null;
+
+  const list = document.getElementById('projectList');
+  list.innerHTML = '<p class="project-empty">Loading...</p>';
+
+  try {
+    const ownQuery = db.collection('projects')
+      .where('ownerId', '==', currentUser.uid)
+      .orderBy('updatedAt', 'desc');
+
+    const sharedQuery = db.collection('projects')
+      .where('shared', '==', true)
+      .orderBy('updatedAt', 'desc');
+
+    const [ownSnap, sharedSnap] = await Promise.all([ownQuery.get(), sharedQuery.get()]);
+
+    const projects = [];
+    const seenIds = new Set();
+
+    ownSnap.forEach(doc => {
+      projects.push({ id: doc.id, ...doc.data(), isOwner: true });
+      seenIds.add(doc.id);
+    });
+
+    sharedSnap.forEach(doc => {
+      if (!seenIds.has(doc.id)) {
+        projects.push({ id: doc.id, ...doc.data(), isOwner: false });
+      }
+    });
+
+    if (projects.length === 0) {
+      list.innerHTML = '<p class="project-empty">No projects yet. Create your first one below.</p>';
+      return;
+    }
+
+    list.innerHTML = projects.map(p => {
+      const date = p.updatedAt?.toDate ? p.updatedAt.toDate().toLocaleDateString() : '';
+      const sharedBadge = p.shared ? '<span class="proj-shared">Shared</span>' : '';
+      const ownerInfo = p.isOwner ? '' : `<span class="proj-owner">by ${p.ownerName || p.ownerEmail || 'team member'}</span>`;
+      const deleteBtn = p.isOwner ? `<button class="proj-delete" onclick="event.stopPropagation();deleteProject('${p.id}')" title="Delete">&times;</button>` : '';
+      return `<div class="project-list-item" onclick="openProject('${p.id}')">
+        <div class="proj-meta">
+          <div class="proj-title">${escHtml(p.name || 'Untitled Project')} ${ownerInfo}</div>
+          <div class="proj-date">${date ? 'Last modified: '+date : ''} ${p.dataSources?.length ? '&middot; '+p.dataSources.length+' source(s)' : ''}</div>
+        </div>
+        ${sharedBadge}
+        ${deleteBtn}
+      </div>`;
+    }).join('');
+  } catch (err) {
+    list.innerHTML = `<p style="color:var(--red);font-size:13px;">Error loading projects: ${err.message}</p>`;
+    console.error('Project list error:', err);
+  }
+}
+
+function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+async function createNewProject() {
+  document.getElementById('projectPicker').classList.add('hidden');
+
+  // Reset all state
+  routes = { type:'FeatureCollection', features:[] };
+  structures = { type:'FeatureCollection', features:[] };
+  quarterly = [];
+  dataSources = [];
+  fileQueue = [];
+  projectMaterials = JSON.parse(JSON.stringify(DEFAULT_MATERIALS));
+  hideZeros = true;
+  collapsedCats = {};
+  pType = 'ftth';
+
+  try {
+    const docRef = await db.collection('projects').add({
+      name: 'New Project',
+      subtitle: '',
+      ownerId: currentUser.uid,
+      ownerEmail: currentUser.email,
+      ownerName: currentUser.displayName || '',
+      shared: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      projectType: 'ftth',
+      materials: projectMaterials,
+      routes: routes,
+      structures: structures,
+      quarterly: quarterly,
+      dataSources: [],
+      hideZeros: true,
+      collapsedCats: {}
+    });
+
+    currentProjectId = docRef.id;
+    currentProjectOwnerId = currentUser.uid;
+
+    // Show onboarding for file upload
+    document.getElementById('onboard').classList.remove('hidden');
+    document.getElementById('projName').value = 'New Project';
+    document.getElementById('projSub').value = '';
+    document.getElementById('chkShared').checked = false;
+    document.getElementById('shareLabel').textContent = 'Private';
+    document.getElementById('btnSave').style.display = '';
+    document.getElementById('shareToggle').style.display = '';
+    document.getElementById('saveIndicator').style.display = '';
+    document.getElementById('saveText').textContent = 'Saved';
+    document.getElementById('projName').readOnly = false;
+    document.getElementById('projSub').readOnly = false;
+
+    updateSourceCount();
+    renderQueue();
+    toast('New project created', 'success');
+  } catch (err) {
+    toast('Error creating project: ' + err.message, 'error');
+    console.error(err);
+    showProjectPicker();
+  }
+}
+
+async function openProject(projectId) {
+  document.getElementById('projectPicker').classList.add('hidden');
+
+  try {
+    const doc = await db.collection('projects').doc(projectId).get();
+    if (!doc.exists) {
+      toast('Project not found', 'error');
+      showProjectPicker();
+      return;
+    }
+
+    const data = doc.data();
+    currentProjectId = projectId;
+    currentProjectOwnerId = data.ownerId;
+
+    // Restore state
+    projectMaterials = data.materials || JSON.parse(JSON.stringify(DEFAULT_MATERIALS));
+    routes = data.routes || { type:'FeatureCollection', features:[] };
+    structures = data.structures || { type:'FeatureCollection', features:[] };
+    quarterly = data.quarterly || [];
+    dataSources = data.dataSources || [];
+    hideZeros = data.hideZeros !== undefined ? data.hideZeros : true;
+    collapsedCats = data.collapsedCats || {};
+    pType = data.projectType || 'ftth';
+
+    // Update UI
+    document.getElementById('projName').value = data.name || '';
+    document.getElementById('projSub').value = data.subtitle || '';
+    document.getElementById('chkShared').checked = data.shared || false;
+    document.getElementById('shareLabel').textContent = data.shared ? 'Shared' : 'Private';
+
+    const isOwner = data.ownerId === currentUser.uid;
+    document.getElementById('btnSave').style.display = isOwner ? '' : 'none';
+    document.getElementById('shareToggle').style.display = isOwner ? '' : 'none';
+    document.getElementById('projName').readOnly = !isOwner;
+    document.getElementById('projSub').readOnly = !isOwner;
+
+    // Hide onboarding, show app
+    document.getElementById('onboard').classList.add('hidden');
+
+    detectType();
+    updateSourceCount();
+
+    if (routes.features.length) {
+      drawRoutes(); fitBounds(); buildSidebar();
+    }
+    buildDash();
+
+    document.getElementById('saveIndicator').style.display = '';
+    document.getElementById('saveText').textContent = 'Saved';
+    document.getElementById('saveIndicator').className = 'save-indicator saved';
+
+    toast('Opened: ' + (data.name || 'Untitled'), 'success');
+  } catch (err) {
+    toast('Error opening project: ' + err.message, 'error');
+    console.error(err);
+    showProjectPicker();
+  }
+}
+
+async function deleteProject(projectId) {
+  if (!confirm('Delete this project? This cannot be undone.')) return;
+  try {
+    await db.collection('projects').doc(projectId).delete();
+    toast('Project deleted', 'success');
+    showProjectPicker();
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+// =========== SAVE / AUTO-SAVE ===========
+async function doSaveProject() {
+  if (!currentProjectId || !currentUser) return;
+  if (currentProjectOwnerId && currentProjectOwnerId !== currentUser.uid) return;
+
+  const indicator = document.getElementById('saveIndicator');
+  const saveText = document.getElementById('saveText');
+  indicator.style.display = '';
+  indicator.className = 'save-indicator saving';
+  saveText.textContent = 'Saving...';
+
+  try {
+    const projectData = {
+      name: document.getElementById('projName').value,
+      subtitle: document.getElementById('projSub').value,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      projectType: pType,
+      materials: projectMaterials,
+      routes: routes,
+      structures: structures,
+      quarterly: quarterly,
+      dataSources: dataSources.map(s => ({ name:s.name, type:s.type, materials:s.materials })),
+      hideZeros: hideZeros,
+      collapsedCats: collapsedCats,
+      shared: document.getElementById('chkShared').checked
+    };
+
+    // Firestore 1MB limit check
+    const sizeEstimate = JSON.stringify(projectData).length;
+    if (sizeEstimate > 900000) {
+      projectData.routes = { type:'FeatureCollection', features:[] };
+      toast('Project too large — route data omitted. Use Export for full backup.', 'error');
+    }
+
+    await db.collection('projects').doc(currentProjectId).update(projectData);
+
+    indicator.className = 'save-indicator saved';
+    saveText.textContent = 'Saved';
+  } catch (err) {
+    indicator.className = 'save-indicator error';
+    saveText.textContent = 'Save failed';
+    toast('Save error: ' + err.message, 'error');
+    console.error(err);
+  }
+}
+
+function scheduleSave() {
+  if (!currentProjectId) return;
+  if (currentProjectOwnerId && currentProjectOwnerId !== currentUser?.uid) return;
+
+  const indicator = document.getElementById('saveIndicator');
+  const saveText = document.getElementById('saveText');
+  if (indicator) {
+    indicator.style.display = '';
+    indicator.className = 'save-indicator';
+    saveText.textContent = 'Unsaved changes';
+  }
+
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => doSaveProject(), 3000);
+}
+
+function toggleShared() {
+  const shared = document.getElementById('chkShared').checked;
+  document.getElementById('shareLabel').textContent = shared ? 'Shared' : 'Private';
+  scheduleSave();
+}
+
 // =========== STATE ===========
 let routes = { type:'FeatureCollection', features:[] };
 let structures = { type:'FeatureCollection', features:[] };
@@ -870,6 +1331,7 @@ async function processQueue(){
   fileQueue=[];
   mergeAllSources();
   render();
+  scheduleSave();
 }
 async function processFile(f){
   const ext=f.name.split('.').pop().toLowerCase();
@@ -884,7 +1346,7 @@ async function processFile(f){
   }catch(e){ toast(`Error: ${f.name} - ${e.message}`,'error'); console.error(e); }
 }
 function addMoreFiles(files){
-  for(const f of files) processFile(f).then(()=>{ mergeAllSources(); render(); });
+  for(const f of files) processFile(f).then(()=>{ mergeAllSources(); render(); scheduleSave(); });
 }
 
 // =========== KMZ PARSER ===========
@@ -1107,6 +1569,7 @@ function skipToEmptyCatalog(){
   projectMaterials=JSON.parse(JSON.stringify(DEFAULT_MATERIALS));
   buildDash();
   switchView('dash');
+  scheduleSave();
 }
 
 // =========== MAP ===========
@@ -1129,7 +1592,9 @@ function render(){
   document.getElementById('sRoutes').textContent=fmt(routes.features.length);
   document.getElementById('sLength').textContent=fmt(totalFt/5280)+' mi';
   document.getElementById('sHH').textContent=fmt(structures.features.length);
-  if(dataSources.length&&dataSources[0].routes.length){
+  // Only auto-name from file if project is still named "New Project"
+  const curName=document.getElementById('projName').value;
+  if(dataSources.length&&dataSources[0].routes.length&&(!curName||curName==='New Project')){
     document.getElementById('projName').value=dataSources[0].name.replace(/\.(kmz|kml)$/i,'');
   }
   drawRoutes(); fitBounds(); buildSidebar(); buildDash();
@@ -1263,7 +1728,7 @@ function buildDash(){
   // Filter bar
   const filterBar=document.getElementById('dashFilterBar');
   filterBar.innerHTML=`<div class="filter-bar">
-    <label><input type="checkbox" ${hideZeros?'checked':''} onchange="hideZeros=this.checked;buildDash()"> Hide zero-quantity items</label>
+    <label><input type="checkbox" ${hideZeros?'checked':''} onchange="hideZeros=this.checked;buildDash();scheduleSave()"> Hide zero-quantity items</label>
     <span style="flex:1"></span>
     <span style="font-size:12px;color:var(--text-muted)">All quantities and costs are editable</span>
   </div>`;
@@ -1346,6 +1811,7 @@ function buildDash(){
 function toggleCat(catKey){
   collapsedCats[catKey]=!collapsedCats[catKey];
   buildDash();
+  scheduleSave();
 }
 
 function updateMaterialField(el){
@@ -1378,6 +1844,7 @@ function updateMaterialField(el){
   Object.values(projectMaterials).forEach(cat=>{cat.items.forEach(it=>{gt+=it.qty*(it.currentCost!==undefined?it.currentCost:it.defaultCost);});});
   const gtEl=document.getElementById('grandTotal');
   if(gtEl) gtEl.textContent=fmtC(gt);
+  scheduleSave();
 }
 
 // =========== COMPARE ===========
@@ -1492,6 +1959,7 @@ async function loadDropbox(){
     await processFile(f);
     mergeAllSources();
     render();
+    scheduleSave();
   }catch(err){toast('Dropbox error: '+err.message,'error');}
 }
 
