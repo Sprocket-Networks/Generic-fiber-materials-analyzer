@@ -760,12 +760,10 @@ async function showProjectPicker() {
 
   try {
     const ownQuery = db.collection('projects')
-      .where('ownerId', '==', currentUser.uid)
-      .orderBy('updatedAt', 'desc');
+      .where('ownerId', '==', currentUser.uid);
 
     const sharedQuery = db.collection('projects')
-      .where('shared', '==', true)
-      .orderBy('updatedAt', 'desc');
+      .where('shared', '==', true);
 
     const [ownSnap, sharedSnap] = await Promise.all([ownQuery.get(), sharedQuery.get()]);
 
@@ -781,6 +779,13 @@ async function showProjectPicker() {
       if (!seenIds.has(doc.id)) {
         projects.push({ id: doc.id, ...doc.data(), isOwner: false });
       }
+    });
+
+    // Sort client-side: newest first
+    projects.sort((a, b) => {
+      const ta = a.updatedAt?.toDate ? a.updatedAt.toDate().getTime() : 0;
+      const tb = b.updatedAt?.toDate ? b.updatedAt.toDate().getTime() : 0;
+      return tb - ta;
     });
 
     if (projects.length === 0) {
