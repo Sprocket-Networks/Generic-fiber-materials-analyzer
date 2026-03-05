@@ -1805,12 +1805,12 @@ let geologyOverlay = null;
 function toggleGeologyOverlay(show) {
   if (show) {
     if (!geologyOverlay) {
-      geologyOverlay = L.tileLayer.wms('https://mrdata.usgs.gov/services/sgmc2', {
-        layers: 'SGMCGeologicUnits',
-        format: 'image/png',
-        transparent: true,
-        opacity: 0.45,
-        attribution: 'USGS SGMC'
+      geologyOverlay = L.tileLayer('https://tiles.macrostrat.org/carto/{z}/{x}/{y}.png', {
+        opacity: 0.55,
+        maxZoom: 19,
+        tileSize: 512,
+        zoomOffset: -1,
+        attribution: '<a href="https://macrostrat.org" target="_blank">Macrostrat</a>'
       }).addTo(map);
     }
   } else {
