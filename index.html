@@ -278,13 +278,13 @@ select.sidebar-select {
 
 /* Editable qty */
 .editable-qty {
-  width:90px; padding:3px 6px; background:var(--surface2); color:var(--text);
-  border:1px solid transparent; border-radius:4px; text-align:right;
+  width:90px; padding:4px 8px; background:#f0f4ff; color:var(--text);
+  border:1px solid var(--border-light); border-radius:4px; text-align:right;
   font-size:13px; font-family:inherit; font-weight:600; font-variant-numeric:tabular-nums;
-  transition:border-color .15s;
+  transition:border-color .15s, box-shadow .15s;
 }
-.editable-qty:hover { border-color:var(--border); }
-.editable-qty:focus { border-color:var(--accent); outline:none; background:white; box-shadow:0 0 0 2px var(--accent-bg); }
+.editable-qty:hover { border-color:var(--accent-light,#93b4ff); background:#e8eeff; }
+.editable-qty:focus { border-color:var(--accent); outline:none; background:white; box-shadow:0 0 0 3px var(--accent-bg); }
 
 .total-budget-bar {
   background: linear-gradient(135deg, #1e293b, #334155);
@@ -540,7 +540,7 @@ select.sidebar-select {
     </div>
     <button class="analyze-btn" id="analyzeBtn" disabled onclick="processQueue()">Add files to begin</button>
     <button class="skip-btn" onclick="skipToEmptyCatalog()">Skip &mdash; start with empty materials catalog</button>
-    <div style="margin-top:16px;color:var(--text-muted);font-size:12px;">150+ FTTX materials pre-loaded &mdash; upload files to auto-populate quantities or edit manually</div>
+    <div style="margin-top:16px;color:var(--text-muted);font-size:12px;">260+ FTTX materials pre-loaded across 15 categories &mdash; upload files to auto-populate quantities or edit manually</div>
   </div>
 </div>
 
@@ -645,6 +645,12 @@ select.sidebar-select {
       </select>
     </div>
     <div class="sep"></div>
+    <h4>Terrain</h4>
+    <div id="terrainSidebarSummary">
+      <div style="color:var(--text-muted);font-size:11px;">Load routes, then analyze terrain</div>
+    </div>
+    <button class="btn" style="width:100%;margin-top:6px;font-size:11px;padding:5px 8px;" onclick="analyzeRouteTerrain()">Analyze Terrain Along Routes</button>
+    <div class="sep"></div>
     <h4>Legend</h4>
     <div id="legend"></div>
   </div>
@@ -655,6 +661,8 @@ select.sidebar-select {
       <button class="layer-btn active" onclick="setTile('terrain')" data-layer="terrain">Terrain</button>
       <button class="layer-btn" onclick="setTile('satellite')" data-layer="satellite">Satellite</button>
       <button class="layer-btn" onclick="setTile('topo')" data-layer="topo">Topo</button>
+      <span style="width:1px;background:var(--border);margin:0 2px;align-self:stretch;"></span>
+      <button class="layer-btn" id="btnGeology" onclick="this.classList.toggle('active');toggleGeologyOverlay(this.classList.contains('active'))">Geology</button>
     </div>
   </div>
 </div>
@@ -663,6 +671,7 @@ select.sidebar-select {
 <div class="view" id="viewDash">
   <div class="dash">
     <div id="dashFilterBar"></div>
+    <div id="terrainSummary"></div>
     <div id="materialsCatalog"></div>
     <div id="budgetSummary"></div>
   </div>
@@ -703,6 +712,7 @@ let currentUser = null;
 let currentProjectId = null;
 let currentProjectOwnerId = null;
 let saveTimeout = null;
+let pendingNewProject = false;
 const ALLOWED_DOMAIN = 'sprocketnetworks.com';
 
 auth.onAuthStateChanged(user => {
@@ -836,7 +846,7 @@ async function loadProjectsList() {
 
 function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
-async function createNewProject() {
+function createNewProject() {
   document.getElementById('projectsDropdown').classList.remove('open');
 
   // Reset all state
@@ -846,54 +856,33 @@ async function createNewProject() {
   dataSources = [];
   fileQueue = [];
   projectMaterials = JSON.parse(JSON.stringify(DEFAULT_MATERIALS));
-  hideZeros = true;
+  hideZeros = false;
   collapsedCats = {};
   pType = 'ftth';
+  window.terrainAnalysis = null;
 
-  try {
-    const docRef = await db.collection('projects').add({
-      name: 'New Project',
-      subtitle: '',
-      ownerId: currentUser.uid,
-      ownerEmail: currentUser.email,
-      ownerName: currentUser.displayName || '',
-      shared: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      projectType: 'ftth',
-      materials: projectMaterials,
-      routes: routes,
-      structures: structures,
-      quarterly: quarterly,
-      dataSources: [],
-      hideZeros: true,
-      collapsedCats: {}
-    });
+  // Defer Firebase doc creation until first save
+  currentProjectId = null;
+  currentProjectOwnerId = currentUser.uid;
+  pendingNewProject = true;
 
-    currentProjectId = docRef.id;
-    currentProjectOwnerId = currentUser.uid;
+  // Show onboarding for file upload
+  document.getElementById('onboard').classList.remove('hidden');
+  document.getElementById('projName').value = 'New Project';
+  document.getElementById('projSub').value = '';
+  document.getElementById('chkShared').checked = false;
+  document.getElementById('shareLabel').textContent = 'Private';
+  document.getElementById('btnSave').style.display = '';
+  document.getElementById('shareToggle').style.display = '';
+  document.getElementById('saveIndicator').style.display = '';
+  document.getElementById('saveText').textContent = 'New';
+  document.getElementById('saveIndicator').className = 'save-indicator';
+  document.getElementById('projName').readOnly = false;
+  document.getElementById('projSub').readOnly = false;
 
-    // Show onboarding for file upload
-    document.getElementById('onboard').classList.remove('hidden');
-    document.getElementById('projName').value = 'New Project';
-    document.getElementById('projSub').value = '';
-    document.getElementById('chkShared').checked = false;
-    document.getElementById('shareLabel').textContent = 'Private';
-    document.getElementById('btnSave').style.display = '';
-    document.getElementById('shareToggle').style.display = '';
-    document.getElementById('saveIndicator').style.display = '';
-    document.getElementById('saveText').textContent = 'Saved';
-    document.getElementById('projName').readOnly = false;
-    document.getElementById('projSub').readOnly = false;
-
-    updateSourceCount();
-    renderQueue();
-    toast('New project created', 'success');
-  } catch (err) {
-    toast('Error creating project: ' + err.message, 'error');
-    console.error(err);
-    loadProjectsList();
-  }
+  updateSourceCount();
+  renderQueue();
+  toast('New project — will save on first change', 'success');
 }
 
 async function openProject(projectId) {
@@ -920,6 +909,7 @@ async function openProject(projectId) {
     hideZeros = data.hideZeros !== undefined ? data.hideZeros : true;
     collapsedCats = data.collapsedCats || {};
     pType = data.projectType || 'ftth';
+    window.terrainAnalysis = data.terrainAnalysis || null;
 
     // Update UI
     document.getElementById('projName').value = data.name || '';
@@ -943,6 +933,7 @@ async function openProject(projectId) {
       drawRoutes(); fitBounds(); buildSidebar();
     }
     buildDash();
+    if (window.terrainAnalysis) buildTerrainDashboard();
 
     document.getElementById('saveIndicator').style.display = '';
     document.getElementById('saveText').textContent = 'Saved';
@@ -991,7 +982,8 @@ async function doSaveProject() {
       dataSources: dataSources.map(s => ({ name:s.name, type:s.type, materials:s.materials })),
       hideZeros: hideZeros,
       collapsedCats: collapsedCats,
-      shared: document.getElementById('chkShared').checked
+      shared: document.getElementById('chkShared').checked,
+      terrainAnalysis: window.terrainAnalysis || null
     };
 
     // Firestore 1MB limit check
@@ -1014,7 +1006,8 @@ async function doSaveProject() {
 }
 
 function scheduleSave() {
-  if (!currentProjectId) return;
+  if (!currentUser) return;
+  if (!currentProjectId && !pendingNewProject) return;
   if (currentProjectOwnerId && currentProjectOwnerId !== currentUser?.uid) return;
 
   const indicator = document.getElementById('saveIndicator');
@@ -1026,7 +1019,57 @@ function scheduleSave() {
   }
 
   clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => doSaveProject(), 3000);
+  saveTimeout = setTimeout(() => {
+    if (pendingNewProject && !currentProjectId) {
+      createAndSaveProject();
+    } else {
+      doSaveProject();
+    }
+  }, 3000);
+}
+
+async function createAndSaveProject() {
+  pendingNewProject = false;
+  const indicator = document.getElementById('saveIndicator');
+  const saveText = document.getElementById('saveText');
+  try {
+    if (indicator) { indicator.className = 'save-indicator saving'; saveText.textContent = 'Creating project...'; }
+
+    const projectData = {
+      name: document.getElementById('projName').value || 'New Project',
+      subtitle: document.getElementById('projSub').value || '',
+      ownerId: currentUser.uid,
+      ownerEmail: currentUser.email,
+      ownerName: currentUser.displayName || '',
+      shared: document.getElementById('chkShared').checked || false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      projectType: pType,
+      materials: projectMaterials,
+      routes, structures, quarterly,
+      dataSources: dataSources.map(s => ({name:s.name, type:s.type, materials:s.materials})),
+      hideZeros, collapsedCats,
+      terrainAnalysis: window.terrainAnalysis || null
+    };
+
+    // Firestore 1MB doc limit check
+    const jsonSize = new Blob([JSON.stringify(projectData)]).size;
+    if (jsonSize > 900000) {
+      projectData.routes = { type:'FeatureCollection', features:[] };
+      projectData.structures = { type:'FeatureCollection', features:[] };
+    }
+
+    const docRef = await db.collection('projects').add(projectData);
+    currentProjectId = docRef.id;
+
+    if (indicator) { indicator.className = 'save-indicator saved'; saveText.textContent = 'Saved'; }
+    loadProjectsList();
+  } catch (err) {
+    pendingNewProject = true;
+    if (indicator) { indicator.className = 'save-indicator error'; saveText.textContent = 'Save failed'; }
+    toast('Error creating project: ' + err.message, 'error');
+    console.error(err);
+  }
 }
 
 function toggleShared() {
@@ -1043,7 +1086,7 @@ let pType = 'ftth';
 let map, routeLayerGroup, structureLayer, currentTileLayer;
 let fileQueue = [];
 let dataSources = [];
-let hideZeros = true;
+let hideZeros = false;
 let collapsedCats = {};
 const PALETTE = ['#e74c3c','#2563eb','#059669','#d97706','#7c3aed','#0d9488','#e67e22','#3498db','#e91e63','#00bcd4'];
 const FIBER_COLORS = {2:'#059669',4:'#059669',6:'#0d9488',12:'#d97706',24:'#2563eb',48:'#7c3aed',72:'#dc2626',96:'#e67e22',144:'#e91e63',288:'#3498db',432:'#9b59b6',576:'#e74c3c',864:'#00bcd4'};
@@ -1120,6 +1163,30 @@ const DEFAULT_MATERIALS = {
       {id:'hdpe_2in',name:'HDPE Conduit 2"',unit:'ft',defaultCost:0.85,qty:0},
       {id:'hdpe_3in',name:'HDPE Conduit 3"',unit:'ft',defaultCost:1.40,qty:0},
       {id:'hdpe_4in',name:'HDPE Conduit 4"',unit:'ft',defaultCost:1.95,qty:0},
+      {id:'hdpe_6in',name:'HDPE Conduit 6"',unit:'ft',defaultCost:3.50,qty:0},
+      {id:'hdpe_8in',name:'HDPE Conduit 8"',unit:'ft',defaultCost:5.25,qty:0},
+      {id:'pvc_sch40_2in',name:'PVC Schedule 40 Conduit 2"',unit:'ft',defaultCost:1.10,qty:0},
+      {id:'pvc_sch40_4in',name:'PVC Schedule 40 Conduit 4"',unit:'ft',defaultCost:2.40,qty:0},
+      {id:'pvc_sch80_2in',name:'PVC Schedule 80 Conduit 2"',unit:'ft',defaultCost:1.65,qty:0},
+      {id:'pvc_sch80_4in',name:'PVC Schedule 80 Conduit 4"',unit:'ft',defaultCost:3.50,qty:0},
+      {id:'rigid_steel_2in',name:'Rigid Steel Conduit 2"',unit:'ft',defaultCost:4.50,qty:0},
+      {id:'rigid_steel_4in',name:'Rigid Steel Conduit 4"',unit:'ft',defaultCost:8.50,qty:0},
+      {id:'corrugated_2in',name:'Corrugated Duct 2"',unit:'ft',defaultCost:0.95,qty:0},
+      {id:'corrugated_4in',name:'Corrugated Duct 4"',unit:'ft',defaultCost:1.80,qty:0},
+      {id:'multiway_2way_10mm',name:'2-way Microduct 10mm',unit:'ft',defaultCost:0.65,qty:0},
+      {id:'multiway_2way_12mm',name:'2-way Microduct 12mm',unit:'ft',defaultCost:0.72,qty:0},
+      {id:'multiway_2way_14mm',name:'2-way Microduct 14mm',unit:'ft',defaultCost:0.80,qty:0},
+      {id:'multiway_4way_10mm',name:'4-way Microduct 10mm',unit:'ft',defaultCost:1.10,qty:0},
+      {id:'multiway_4way_12mm',name:'4-way Microduct 12mm',unit:'ft',defaultCost:1.25,qty:0},
+      {id:'multiway_4way_14mm',name:'4-way Microduct 14mm',unit:'ft',defaultCost:1.40,qty:0},
+      {id:'multiway_7way_10mm',name:'7-way Microduct 10mm',unit:'ft',defaultCost:1.65,qty:0},
+      {id:'multiway_7way_12mm',name:'7-way Microduct 12mm',unit:'ft',defaultCost:1.85,qty:0},
+      {id:'multiway_7way_14mm',name:'7-way Microduct 14mm',unit:'ft',defaultCost:2.10,qty:0},
+      {id:'conduit_coupling',name:'Conduit Coupling',unit:'ea',defaultCost:3.50,qty:0},
+      {id:'conduit_elbow',name:'Conduit Sweep / Elbow',unit:'ea',defaultCost:12.00,qty:0},
+      {id:'conduit_reducer',name:'Conduit Reducer',unit:'ea',defaultCost:8.00,qty:0},
+      {id:'duct_plug',name:'Duct Plug / End Cap',unit:'ea',defaultCost:2.50,qty:0},
+      {id:'duct_sealant',name:'Duct Sealant',unit:'ea',defaultCost:15.00,qty:0},
       {id:'innerduct_1in',name:'Innerduct 1"',unit:'ft',defaultCost:0.35,qty:0},
       {id:'innerduct_1_25in',name:'Innerduct 1.25"',unit:'ft',defaultCost:0.42,qty:0},
       {id:'flex_conduit',name:'Flexible Conduit',unit:'ft',defaultCost:0.60,qty:0},
@@ -1218,14 +1285,25 @@ const DEFAULT_MATERIALS = {
   },
   underground_boring: {
     label:'Underground / Boring', color:'var(--orange)', items:[
-      {id:'bore_ft',name:'Directional Bore',unit:'ft',defaultCost:8.50,qty:0},
+      {id:'bore_ft',name:'Directional Bore (standard)',unit:'ft',defaultCost:8.50,qty:0},
+      {id:'bore_2in',name:'Directional Bore 2"',unit:'ft',defaultCost:8.50,qty:0},
+      {id:'bore_4in',name:'Directional Bore 4"',unit:'ft',defaultCost:14.00,qty:0},
+      {id:'bore_6in',name:'Directional Bore 6"',unit:'ft',defaultCost:22.00,qty:0},
+      {id:'bore_rock_ft',name:'Rock Bore',unit:'ft',defaultCost:35.00,qty:0},
       {id:'plow_ft',name:'Plow',unit:'ft',defaultCost:3.50,qty:0},
       {id:'trench_ft',name:'Trench',unit:'ft',defaultCost:5.00,qty:0},
       {id:'open_trench_ft',name:'Open Trench with Restore',unit:'ft',defaultCost:12.00,qty:0},
       {id:'concrete_enc_ft',name:'Concrete Encasement',unit:'ft',defaultCost:18.00,qty:0},
+      {id:'mud_mixing',name:'Mud Mixing / Drilling Fluid',unit:'gal',defaultCost:3.50,qty:0},
+      {id:'pit_dewatering',name:'Pit Dewatering',unit:'ea',defaultCost:500,qty:0},
+      {id:'potholing',name:'Potholing / Utility Locate',unit:'ea',defaultCost:350,qty:0},
+      {id:'hand_dig_ft',name:'Hand Dig',unit:'ft',defaultCost:25.00,qty:0},
+      {id:'saw_cut_ft',name:'Saw Cutting',unit:'ft',defaultCost:4.50,qty:0},
       {id:'warning_tape',name:'Warning Tape',unit:'ft',defaultCost:0.03,qty:0},
       {id:'tracer_wire',name:'Locate Wire / Tracer Wire',unit:'ft',defaultCost:0.06,qty:0},
       {id:'pull_tape',name:'Pull Tape / Pull Rope',unit:'ft',defaultCost:0.02,qty:0},
+      {id:'marker_ball',name:'Marker Ball / EMS Marker',unit:'ea',defaultCost:18,qty:0},
+      {id:'warning_mesh',name:'Warning Mesh / Detectable Tape',unit:'ft',defaultCost:0.12,qty:0},
     ]
   },
   testing_passive: {
@@ -1255,6 +1333,102 @@ const DEFAULT_MATERIALS = {
       {id:'warning_sign',name:'Warning Sign',unit:'ea',defaultCost:18,qty:0},
       {id:'permit_cost',name:'Permit Cost',unit:'ea',defaultCost:500,qty:0},
       {id:'easement_cost',name:'Easement Cost',unit:'ea',defaultCost:1500,qty:0},
+      {id:'asphalt_restore',name:'Asphalt Restoration',unit:'sq ft',defaultCost:8.50,qty:0},
+      {id:'concrete_restore',name:'Concrete Restoration',unit:'sq ft',defaultCost:12.00,qty:0},
+      {id:'sidewalk_restore',name:'Sidewalk Restoration',unit:'sq ft',defaultCost:10.00,qty:0},
+      {id:'curb_restore',name:'Curb & Gutter Restoration',unit:'ft',defaultCost:25.00,qty:0},
+      {id:'sod_restore',name:'Sod Restoration',unit:'sq ft',defaultCost:1.50,qty:0},
+      {id:'topsoil',name:'Topsoil',unit:'cu yd',defaultCost:35.00,qty:0},
+      {id:'seed_mulch',name:'Seed & Mulch',unit:'sq ft',defaultCost:0.50,qty:0},
+      {id:'gravel_backfill',name:'Gravel / Aggregate Backfill',unit:'cu yd',defaultCost:45.00,qty:0},
+      {id:'flowable_fill',name:'Flowable Fill',unit:'cu yd',defaultCost:125.00,qty:0},
+      {id:'erosion_control',name:'Erosion Control (Silt Fence)',unit:'ft',defaultCost:3.50,qty:0},
+      {id:'straw_wattle',name:'Straw Wattle',unit:'ft',defaultCost:4.00,qty:0},
+      {id:'driveway_restore',name:'Driveway Restoration',unit:'ea',defaultCost:500,qty:0},
+      {id:'landscape_restore',name:'Landscape Restoration',unit:'ea',defaultCost:350,qty:0},
+    ]
+  },
+  crossing_materials: {
+    label:'Railroad / Highway Crossings', color:'#b45309', items:[
+      {id:'steel_casing_4in',name:'Steel Casing Pipe 4"',unit:'ft',defaultCost:12.00,qty:0},
+      {id:'steel_casing_6in',name:'Steel Casing Pipe 6"',unit:'ft',defaultCost:18.00,qty:0},
+      {id:'steel_casing_8in',name:'Steel Casing Pipe 8"',unit:'ft',defaultCost:28.00,qty:0},
+      {id:'steel_casing_12in',name:'Steel Casing Pipe 12"',unit:'ft',defaultCost:42.00,qty:0},
+      {id:'steel_casing_16in',name:'Steel Casing Pipe 16"',unit:'ft',defaultCost:65.00,qty:0},
+      {id:'casing_spacer',name:'Casing Spacer',unit:'ea',defaultCost:8.00,qty:0},
+      {id:'casing_end_seal',name:'Casing End Seal',unit:'ea',defaultCost:45.00,qty:0},
+      {id:'bore_pit',name:'Bore Pit',unit:'ea',defaultCost:1500,qty:0},
+      {id:'jack_bore_setup',name:'Jack & Bore Setup / Mobilization',unit:'ea',defaultCost:5000,qty:0},
+      {id:'jack_bore_ft',name:'Jack & Bore (per foot)',unit:'ft',defaultCost:85.00,qty:0},
+      {id:'rr_crossing_permit',name:'Railroad Crossing Permit',unit:'ea',defaultCost:5000,qty:0},
+      {id:'rr_flagging',name:'Railroad Flagging Service',unit:'day',defaultCost:2500,qty:0},
+      {id:'hwy_crossing_permit',name:'Highway Crossing Permit',unit:'ea',defaultCost:2000,qty:0},
+      {id:'bridge_attachment',name:'Bridge Attachment Hardware',unit:'ea',defaultCost:350,qty:0},
+      {id:'bridge_conduit_ft',name:'Bridge-mounted Conduit',unit:'ft',defaultCost:15.00,qty:0},
+    ]
+  },
+  mdu_building: {
+    label:'MDU / Building Entry', color:'#6d28d9', items:[
+      {id:'riser_cable_12f',name:'Riser Cable 12F',unit:'ft',defaultCost:0.45,qty:0},
+      {id:'riser_cable_24f',name:'Riser Cable 24F',unit:'ft',defaultCost:0.65,qty:0},
+      {id:'riser_cable_48f',name:'Riser Cable 48F',unit:'ft',defaultCost:1.10,qty:0},
+      {id:'riser_cable_96f',name:'Riser Cable 96F',unit:'ft',defaultCost:1.80,qty:0},
+      {id:'building_entry_hw',name:'Building Entry Hardware',unit:'ea',defaultCost:250,qty:0},
+      {id:'building_entry_conduit',name:'Building Entry Conduit',unit:'ft',defaultCost:8.00,qty:0},
+      {id:'floor_box',name:'Floor Distribution Box',unit:'ea',defaultCost:175,qty:0},
+      {id:'wall_mount_enc',name:'Wall-mount Fiber Enclosure',unit:'ea',defaultCost:125,qty:0},
+      {id:'mdu_enclosure_8',name:'MDU Enclosure 8-port',unit:'ea',defaultCost:195,qty:0},
+      {id:'mdu_enclosure_16',name:'MDU Enclosure 16-port',unit:'ea',defaultCost:325,qty:0},
+      {id:'mdu_enclosure_24',name:'MDU Enclosure 24-port',unit:'ea',defaultCost:450,qty:0},
+      {id:'indoor_cable_plenum',name:'Indoor Fiber Cable (Plenum)',unit:'ft',defaultCost:0.35,qty:0},
+      {id:'indoor_cable_lszh',name:'Indoor Fiber Cable (LSZH)',unit:'ft',defaultCost:0.42,qty:0},
+      {id:'hallway_raceway',name:'Hallway Cable Molding / Raceway',unit:'ft',defaultCost:2.50,qty:0},
+      {id:'fiber_jack',name:'Fiber Wall Jack / Outlet',unit:'ea',defaultCost:35,qty:0},
+      {id:'fire_stop',name:'Fire Stop / Penetration Seal',unit:'ea',defaultCost:45,qty:0},
+    ]
+  },
+  commercial_enterprise: {
+    label:'Commercial / Enterprise', color:'#0369a1', items:[
+      {id:'fiber_dist_frame',name:'Fiber Distribution Frame (FDF)',unit:'ea',defaultCost:2500,qty:0},
+      {id:'odf_rack_mount',name:'ODF Rack Mount',unit:'ea',defaultCost:450,qty:0},
+      {id:'splice_tray_48f',name:'Splice Tray 48F',unit:'ea',defaultCost:32,qty:0},
+      {id:'splice_tray_96f',name:'Splice Tray 96F',unit:'ea',defaultCost:55,qty:0},
+      {id:'patch_panel_144',name:'Patch Panel 144-port',unit:'ea',defaultCost:350,qty:0},
+      {id:'patch_panel_288',name:'Patch Panel 288-port',unit:'ea',defaultCost:650,qty:0},
+      {id:'rack_2post',name:'2-Post Equipment Rack',unit:'ea',defaultCost:350,qty:0},
+      {id:'rack_4post',name:'4-Post Equipment Rack',unit:'ea',defaultCost:650,qty:0},
+      {id:'cable_mgmt_panel',name:'Cable Management Panel',unit:'ea',defaultCost:45,qty:0},
+      {id:'fiber_trough',name:'Fiber Trough / Cable Runway',unit:'ft',defaultCost:12,qty:0},
+      {id:'media_converter',name:'Media Converter',unit:'ea',defaultCost:185,qty:0},
+      {id:'demarcation_enc',name:'Demarcation Enclosure',unit:'ea',defaultCost:350,qty:0},
+    ]
+  },
+  safety_traffic: {
+    label:'Safety / Traffic Control', color:'#ea580c', items:[
+      {id:'traffic_sign',name:'Construction Sign',unit:'ea',defaultCost:45,qty:0},
+      {id:'traffic_barrel',name:'Traffic Barrel',unit:'ea',defaultCost:65,qty:0},
+      {id:'traffic_cone',name:'Traffic Cone',unit:'ea',defaultCost:12,qty:0},
+      {id:'flagger_day',name:'Flagger (per day)',unit:'day',defaultCost:450,qty:0},
+      {id:'arrow_board',name:'Arrow Board Rental',unit:'day',defaultCost:150,qty:0},
+      {id:'tcp_plan',name:'Traffic Control Plan',unit:'ea',defaultCost:1500,qty:0},
+      {id:'barricade',name:'Type III Barricade',unit:'ea',defaultCost:85,qty:0},
+      {id:'delineator',name:'Delineator / Channelizer',unit:'ea',defaultCost:25,qty:0},
+      {id:'safety_fence',name:'Safety Fence (per roll)',unit:'ea',defaultCost:45,qty:0},
+      {id:'police_detail',name:'Police Detail (per day)',unit:'day',defaultCost:800,qty:0},
+    ]
+  },
+  cabinet_power: {
+    label:'Cabinet & Power Equipment', color:'#475569', items:[
+      {id:'power_supply_48v',name:'Power Supply -48V DC',unit:'ea',defaultCost:1200,qty:0},
+      {id:'battery_backup',name:'Battery Backup String',unit:'ea',defaultCost:2500,qty:0},
+      {id:'ups_unit',name:'UPS Unit',unit:'ea',defaultCost:1800,qty:0},
+      {id:'generator_portable',name:'Portable Generator',unit:'ea',defaultCost:5000,qty:0},
+      {id:'meter_base',name:'Electric Meter Base',unit:'ea',defaultCost:350,qty:0},
+      {id:'transfer_switch',name:'Transfer Switch',unit:'ea',defaultCost:800,qty:0},
+      {id:'surge_protector',name:'Surge Protector',unit:'ea',defaultCost:250,qty:0},
+      {id:'cabinet_pad',name:'Equipment Pad / Concrete Pad',unit:'ea',defaultCost:1500,qty:0},
+      {id:'cabinet_fence',name:'Cabinet Security Fence',unit:'ea',defaultCost:3500,qty:0},
+      {id:'hvac_cabinet',name:'Cabinet HVAC / Cooling Unit',unit:'ea',defaultCost:2200,qty:0},
     ]
   }
 };
@@ -1268,6 +1442,12 @@ const MATERIAL_ALIASES = {
   '1-way duct':'multiway_1way','2-way duct':'multiway_2way','3-way duct':'multiway_3way',
   '4-way duct':'multiway_4way','7-way duct':'multiway_7way','12-way duct':'multiway_12way',
   'Handholes':'hh_17x30','Splice Closures':'splice_closure_dome',
+  'riser 12f':'riser_cable_12f','riser 24f':'riser_cable_24f',
+  'riser 48f':'riser_cable_48f','riser 96f':'riser_cable_96f',
+  'steel casing':'steel_casing_6in','bore pit':'bore_pit',
+  'jack bore':'jack_bore_ft','rock bore':'bore_rock_ft',
+  'asphalt':'asphalt_restore','concrete restore':'concrete_restore',
+  'sod':'sod_restore','traffic control':'tcp_plan',
 };
 
 function resolveToMaterialId(rawKey){
@@ -1282,6 +1462,13 @@ function resolveToMaterialId(rawKey){
   if(/drop\s*cable/.test(n)) return 'drop_flat';
   if(/splice\s*closure/.test(n)) return 'splice_closure_dome';
   if(/handhole/.test(n)) return 'hh_17x30';
+  if(/riser\s*cable/i.test(n)) return 'riser_cable_24f';
+  if(/steel\s*cas/i.test(n)) return 'steel_casing_6in';
+  if(/rock\s*bore/i.test(n)) return 'bore_rock_ft';
+  if(/traffic\s*con/i.test(n)) return 'tcp_plan';
+  if(/flagger/i.test(n)) return 'flagger_day';
+  if(/mdu|multi.*dwell/i.test(n)) return 'mdu_enclosure_16';
+  if(/pvc.*sch/i.test(n)) return 'pvc_sch40_2in';
   return null;
 }
 
@@ -1612,6 +1799,148 @@ function setTile(name){
   document.querySelectorAll('.layer-btn').forEach(b=>b.classList.toggle('active',b.dataset.layer===name));
 }
 
+// =========== GEOLOGY OVERLAY ===========
+let geologyOverlay = null;
+
+function toggleGeologyOverlay(show) {
+  if (show) {
+    if (!geologyOverlay) {
+      geologyOverlay = L.tileLayer.wms('https://mrdata.usgs.gov/services/sgmc2', {
+        layers: 'SGMCGeologicUnits',
+        format: 'image/png',
+        transparent: true,
+        opacity: 0.45,
+        attribution: 'USGS SGMC'
+      }).addTo(map);
+    }
+  } else {
+    if (geologyOverlay) { map.removeLayer(geologyOverlay); geologyOverlay = null; }
+  }
+}
+
+// =========== TERRAIN ANALYSIS (Macrostrat API) ===========
+async function analyzeRouteTerrain() {
+  if (!routes.features.length) { toast('Load routes first to analyze terrain', 'error'); return; }
+  toast('Analyzing terrain along routes...');
+
+  const terrainSummary = { rock:0, soil:0, mixed:0, unknown:0, totalSampled:0 };
+  const lithologyCounts = {};
+
+  // Collect sample points along routes (every Nth coordinate)
+  const allPoints = [];
+  routes.features.forEach(feat => {
+    const coords = feat.geometry.coordinates;
+    if (!coords || !coords.length) return;
+    const step = Math.max(1, Math.floor(coords.length / 5));
+    for (let i = 0; i < coords.length; i += step) {
+      allPoints.push({ lat: coords[i][1], lng: coords[i][0], route: feat.properties.name });
+    }
+  });
+
+  // Limit to 50 sample points
+  const sampled = allPoints.length > 50
+    ? allPoints.filter((_, i) => i % Math.ceil(allPoints.length / 50) === 0)
+    : allPoints;
+
+  for (const pt of sampled) {
+    try {
+      const resp = await fetch(`https://macrostrat.org/api/v2/geologic_units/map?lat=${pt.lat}&lng=${pt.lng}&response=short`);
+      const data = await resp.json();
+      if (data.success && data.success.data && data.success.data.length > 0) {
+        const unit = data.success.data[0];
+        const lith = unit.lith || unit.name || 'Unknown';
+        const rockType = (unit.t_type || unit.b_type || '').toLowerCase();
+        const lithLower = lith.toLowerCase() + ' ' + rockType;
+
+        lithologyCounts[lith] = (lithologyCounts[lith] || 0) + 1;
+
+        const isRock = /granite|limestone|sandstone|shale|gneiss|marble|basalt|quartzite|dolomite|slate|schist|rock|bedrock|chalk|chert|rhyolite|andesite/i.test(lithLower);
+        const isSoil = /clay|sand|silt|gravel|alluvium|loam|till|soil|unconsolidated|mud|peat|fill|terrace/i.test(lithLower);
+        if (isRock) terrainSummary.rock++;
+        else if (isSoil) terrainSummary.soil++;
+        else terrainSummary.mixed++;
+      } else {
+        terrainSummary.unknown++;
+      }
+      terrainSummary.totalSampled++;
+      // Small delay to be API-friendly
+      await new Promise(r => setTimeout(r, 80));
+    } catch (e) {
+      terrainSummary.unknown++;
+      terrainSummary.totalSampled++;
+    }
+  }
+
+  window.terrainAnalysis = { terrainSummary, lithologyCounts, timestamp: Date.now() };
+  buildTerrainDashboard();
+  scheduleSave();
+  toast('Terrain analysis complete: ' + terrainSummary.totalSampled + ' points sampled', 'success');
+}
+
+function buildTerrainDashboard() {
+  const container = document.getElementById('terrainSummary');
+  const sidebarEl = document.getElementById('terrainSidebarSummary');
+
+  if (!window.terrainAnalysis) {
+    if (container) container.innerHTML = '';
+    return;
+  }
+
+  const ts = window.terrainAnalysis.terrainSummary;
+  const lc = window.terrainAnalysis.lithologyCounts;
+  const total = ts.totalSampled || 1;
+  const rockPct = ((ts.rock / total) * 100).toFixed(1);
+  const soilPct = ((ts.soil / total) * 100).toFixed(1);
+  const mixedPct = (((ts.mixed + ts.unknown) / total) * 100).toFixed(1);
+
+  if (container) {
+    const lithRows = Object.entries(lc).sort((a,b) => b[1]-a[1]).slice(0, 8)
+      .map(([lith, count]) => `<div class="card-row"><span class="lbl">${lith}</span><span class="val">${count} (${((count/total)*100).toFixed(0)}%)</span></div>`).join('');
+
+    container.innerHTML = `
+      <div class="dash-section">
+        <div class="dash-section-title" style="color:#b45309">
+          Terrain Analysis (surface geology estimate)
+          <span class="line"></span>
+        </div>
+        <div class="cost-grid">
+          <div class="card">
+            <div class="card-title">Terrain Composition</div>
+            <div class="card-row"><span class="lbl">Rock</span><span class="val" style="font-weight:700">${rockPct}%</span></div>
+            <div class="card-row"><span class="lbl">Soil / Dirt</span><span class="val" style="font-weight:700">${soilPct}%</span></div>
+            <div class="card-row"><span class="lbl">Mixed / Unknown</span><span class="val" style="font-weight:700">${mixedPct}%</span></div>
+            <div class="card-row"><span class="lbl">Sample Points</span><span class="val">${ts.totalSampled}</span></div>
+            <div style="margin-top:12px;">
+              <div style="display:flex;height:20px;border-radius:4px;overflow:hidden;">
+                <div style="width:${rockPct}%;background:#78716c;" title="Rock ${rockPct}%"></div>
+                <div style="width:${soilPct}%;background:#a3e635;" title="Soil ${soilPct}%"></div>
+                <div style="width:${mixedPct}%;background:#d4d4d8;" title="Mixed ${mixedPct}%"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
+                <span>&#9632; Rock</span><span>&#9632; Soil</span><span>&#9632; Mixed</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Lithology Breakdown</div>
+            ${lithRows || '<div style="color:var(--text-muted);font-size:12px;">No data</div>'}
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">
+          Data: Macrostrat.org geological database. Estimates based on surface geology along routes — actual subsurface conditions may vary.
+        </div>
+      </div>`;
+  }
+
+  if (sidebarEl) {
+    sidebarEl.innerHTML = `
+      <div class="stat"><span>Rock</span><span class="val">${rockPct}%</span></div>
+      <div class="stat"><span>Soil / Dirt</span><span class="val">${soilPct}%</span></div>
+      <div class="stat"><span>Mixed</span><span class="val">${mixedPct}%</span></div>
+      <div class="stat"><span>Samples</span><span class="val">${ts.totalSampled}</span></div>`;
+  }
+}
+
 function render(){
   document.getElementById('onboard').classList.add('hidden');
   const totalFt=routes.features.reduce((s,f)=>s+(f.properties.length_ft||0),0);
@@ -1756,7 +2085,7 @@ function buildDash(){
   filterBar.innerHTML=`<div class="filter-bar">
     <label><input type="checkbox" ${hideZeros?'checked':''} onchange="hideZeros=this.checked;buildDash();scheduleSave()"> Hide zero-quantity items</label>
     <span style="flex:1"></span>
-    <span style="font-size:12px;color:var(--text-muted)">All quantities and costs are editable</span>
+    <span style="font-size:12px;color:var(--accent);font-weight:500">&#9998; Click any Quantity or Unit Cost cell to edit</span>
   </div>`;
 
   const container=document.getElementById('materialsCatalog');
@@ -1792,15 +2121,15 @@ function buildDash(){
           <thead><tr>
             <th style="width:35%">Material</th>
             <th style="width:8%;text-align:center">Unit</th>
-            <th style="width:17%;text-align:right">Quantity</th>
-            <th style="width:17%;text-align:right">Unit Cost ($)</th>
+            <th style="width:17%;text-align:right">Quantity &#9998;</th>
+            <th style="width:17%;text-align:right">Unit Cost ($) &#9998;</th>
             <th style="width:23%;text-align:right">Extended Cost</th>
           </tr></thead>
           <tbody>`;
 
       const items=hideZeros?visibleItems:allItems;
       if(items.length===0){
-        h+=`<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:12px;font-size:12px;">No items with quantities &mdash; uncheck "Hide zero-quantity" to see all ${allItems.length} items</td></tr>`;
+        h+=`<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:16px;font-size:12px;">All ${allItems.length} items have zero quantity. <a href="#" onclick="event.preventDefault();hideZeros=false;document.querySelector('.filter-bar input[type=checkbox]').checked=false;buildDash();" style="color:var(--accent);text-decoration:underline;cursor:pointer;">Show all items</a> to edit quantities.</td></tr>`;
       }
       items.forEach(item=>{
         const cost=item.currentCost!==undefined?item.currentCost:item.defaultCost;
