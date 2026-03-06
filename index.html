@@ -645,11 +645,11 @@ select.sidebar-select {
       </select>
     </div>
     <div class="sep"></div>
-    <h4>Terrain</h4>
+    <h4>Soil &amp; Construction</h4>
     <div id="terrainSidebarSummary">
-      <div style="color:var(--text-muted);font-size:11px;">Load routes, then analyze terrain</div>
+      <div style="color:var(--text-muted);font-size:11px;">Load routes, then analyze soil conditions</div>
     </div>
-    <button class="btn" style="width:100%;margin-top:6px;font-size:11px;padding:5px 8px;" onclick="analyzeRouteTerrain()">Analyze Terrain Along Routes</button>
+    <button class="btn" style="width:100%;margin-top:6px;font-size:11px;padding:5px 8px;" onclick="analyzeRouteTerrain()">Analyze Soil Along Routes</button>
     <div class="sep"></div>
     <h4>Legend</h4>
     <div id="legend"></div>
@@ -662,7 +662,7 @@ select.sidebar-select {
       <button class="layer-btn" onclick="setTile('satellite')" data-layer="satellite">Satellite</button>
       <button class="layer-btn" onclick="setTile('topo')" data-layer="topo">Topo</button>
       <span style="width:1px;background:var(--border);margin:0 2px;align-self:stretch;"></span>
-      <button class="layer-btn" id="btnGeology" onclick="this.classList.toggle('active');toggleGeologyOverlay(this.classList.contains('active'))">Geology</button>
+      <button class="layer-btn" id="btnGeology" onclick="this.classList.toggle('active');toggleGeologyOverlay(this.classList.contains('active'))">Soils</button>
     </div>
   </div>
 </div>
@@ -1799,18 +1799,19 @@ function setTile(name){
   document.querySelectorAll('.layer-btn').forEach(b=>b.classList.toggle('active',b.dataset.layer===name));
 }
 
-// =========== GEOLOGY OVERLAY ===========
+// =========== SOIL SURVEY OVERLAY (USDA NRCS SSURGO) ===========
 let geologyOverlay = null;
 
 function toggleGeologyOverlay(show) {
   if (show) {
     if (!geologyOverlay) {
-      geologyOverlay = L.tileLayer('https://tiles.macrostrat.org/carto/{z}/{x}/{y}.png', {
-        opacity: 0.55,
-        maxZoom: 19,
-        tileSize: 512,
-        zoomOffset: -1,
-        attribution: '<a href="https://macrostrat.org" target="_blank">Macrostrat</a>'
+      geologyOverlay = L.tileLayer.wms('https://sdmdataaccess.nrcs.usda.gov/spatial/sdm.wms', {
+        layers: 'mapunitpoly',
+        format: 'image/png',
+        transparent: true,
+        opacity: 0.5,
+        version: '1.1.1',
+        attribution: '<a href="https://sdmdataaccess.nrcs.usda.gov" target="_blank">USDA-NRCS Soil Survey</a>'
       }).addTo(map);
     }
   } else {
@@ -1818,63 +1819,154 @@ function toggleGeologyOverlay(show) {
   }
 }
 
-// =========== TERRAIN ANALYSIS (Macrostrat API) ===========
+// =========== SOIL ANALYSIS (USDA SDA API — 0-5 ft depth) ===========
+// Classify soil for fiber construction: what method should be used?
+function classifySoilForConstruction(data) {
+  // data = { clay, sand, silt, unifiedcl, rockFragPct, bedrockDepthCm, texdesc, piVal }
+  const cl = (data.unifiedcl || '').toUpperCase();
+  const bd = data.bedrockDepthCm;
+  const rf = data.rockFragPct || 0;
+  const clay = data.clay || 0;
+  const pi = data.piVal || 0;
+
+  // Check bedrock within 5 ft (152 cm)
+  if (bd !== null && bd > 0 && bd < 152) {
+    if (bd < 60) return { type: 'Rock (shallow bedrock)', method: 'Aerial or Rock Bore', difficulty: 'very-hard', color: '#991b1b' };
+    return { type: 'Rock (bedrock < 5 ft)', method: 'Rock Bore or Aerial', difficulty: 'hard', color: '#dc2626' };
+  }
+
+  // High rock fragments
+  if (rf > 35) return { type: 'Cobble / Rock Fragments', method: 'Bore (rock head)', difficulty: 'hard', color: '#ea580c' };
+  if (rf > 15) return { type: 'Gravelly / Stony', method: 'Bore', difficulty: 'moderate', color: '#d97706' };
+
+  // Unified classification
+  if (/^G[PWC]/.test(cl)) return { type: 'Gravel', method: 'Bore', difficulty: 'moderate', color: '#d97706' };
+  if (/^S[PWC]/.test(cl) || cl === 'SM' || cl === 'SC') {
+    if (clay > 20) return { type: 'Sandy Clay', method: 'Plow or Bore', difficulty: 'easy', color: '#16a34a' };
+    return { type: 'Sand / Sandy Soil', method: 'Plow', difficulty: 'easy', color: '#22c55e' };
+  }
+  if (cl === 'CH' || (clay > 40 && pi > 25)) return { type: 'Hard Clay (expansive)', method: 'Bore or Trench', difficulty: 'moderate', color: '#d97706' };
+  if (cl === 'CL' || (clay > 25)) return { type: 'Clay', method: 'Bore or Plow', difficulty: 'easy-moderate', color: '#65a30d' };
+  if (cl === 'ML' || cl === 'MH') return { type: 'Silt / Loam', method: 'Plow or Bore', difficulty: 'easy', color: '#16a34a' };
+  if (cl === 'OL' || cl === 'OH' || cl === 'PT') return { type: 'Organic / Peat', method: 'Trench (soft ground)', difficulty: 'moderate', color: '#ca8a04' };
+
+  // Fallback on texture
+  const tex = (data.texdesc || '').toLowerCase();
+  if (/rock|bedrock|lithic/.test(tex)) return { type: 'Rock', method: 'Aerial or Rock Bore', difficulty: 'very-hard', color: '#991b1b' };
+  if (/gravel|cobbl|stone/.test(tex)) return { type: 'Gravel / Cobble', method: 'Bore', difficulty: 'moderate', color: '#d97706' };
+  if (/clay/.test(tex)) return { type: 'Clay', method: 'Bore or Plow', difficulty: 'easy-moderate', color: '#65a30d' };
+  if (/sand/.test(tex)) return { type: 'Sandy Soil', method: 'Plow', difficulty: 'easy', color: '#22c55e' };
+  if (/loam|silt/.test(tex)) return { type: 'Loam / Silt', method: 'Plow', difficulty: 'easy', color: '#16a34a' };
+
+  return { type: data.texdesc || 'Unknown', method: 'Bore (default)', difficulty: 'unknown', color: '#94a3b8' };
+}
+
+async function querySoilAtPoint(lat, lng) {
+  const sql = `SELECT TOP 1
+    mu.muname, c.compname, c.comppct_r, c.drainagecl,
+    ch.hzdept_r, ch.hzdepb_r,
+    ch.sandtotal_r, ch.silttotal_r, ch.claytotal_r,
+    ch.pi_r, ch.ksat_r, ch.sieveno200_r,
+    (SELECT TOP 1 cu2.unifiedcl FROM chunified cu2 WHERE cu2.chkey = ch.chkey AND cu2.rvindicator = 'Yes') as unifiedcl,
+    (SELECT TOP 1 chtg2.texdesc FROM chtexturegrp chtg2 WHERE chtg2.chkey = ch.chkey AND chtg2.rvindicator = 'Yes') as texdesc,
+    (SELECT SUM(cf2.fragvol_r) FROM chfrags cf2 WHERE cf2.chkey = ch.chkey) as rockfragpct,
+    (SELECT TOP 1 cr2.resdept_r FROM corestrictions cr2 WHERE cr2.cokey = c.cokey ORDER BY cr2.resdept_r) as bedrock_depth_cm
+  FROM mapunit mu
+  INNER JOIN component c ON c.mukey = mu.mukey
+  INNER JOIN chorizon ch ON ch.cokey = c.cokey
+  WHERE mu.mukey IN (
+    SELECT * FROM SDA_Get_Mukey_from_intersection_with_WktWgs84('POINT(${lng} ${lat})')
+  )
+  AND c.comppct_r >= 30
+  AND ch.hzdept_r < 152
+  ORDER BY c.comppct_r DESC, ch.hzdept_r`;
+
+  const resp = await fetch('https://SDMDataAccess.sc.egov.usda.gov/Tabular/post.rest', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: sql, format: 'JSON+COLUMNNAME' })
+  });
+  const json = await resp.json();
+  if (!json.Table || json.Table.length < 2) return null;
+
+  const cols = json.Table[0];
+  const row = json.Table[1]; // Top component, shallowest horizon
+  const obj = {};
+  cols.forEach((c, i) => { obj[c.toLowerCase()] = row[i]; });
+  return obj;
+}
+
 async function analyzeRouteTerrain() {
-  if (!routes.features.length) { toast('Load routes first to analyze terrain', 'error'); return; }
-  toast('Analyzing terrain along routes...');
+  if (!routes.features.length) { toast('Load routes first to analyze soil', 'error'); return; }
+  toast('Analyzing soil conditions along routes (USDA data)...');
 
-  const terrainSummary = { rock:0, soil:0, mixed:0, unknown:0, totalSampled:0 };
-  const lithologyCounts = {};
+  const soilSummary = { totalSampled: 0, methods: {}, difficulties: {}, types: {} };
+  const soilDetails = [];
 
-  // Collect sample points along routes (every Nth coordinate)
+  // Collect sample points along routes
   const allPoints = [];
   routes.features.forEach(feat => {
     const coords = feat.geometry.coordinates;
     if (!coords || !coords.length) return;
     const step = Math.max(1, Math.floor(coords.length / 5));
     for (let i = 0; i < coords.length; i += step) {
-      allPoints.push({ lat: coords[i][1], lng: coords[i][0], route: feat.properties.name });
+      allPoints.push({ lat: coords[i][1], lng: coords[i][0], route: feat.properties.name || 'Route' });
     }
   });
 
-  // Limit to 50 sample points
-  const sampled = allPoints.length > 50
-    ? allPoints.filter((_, i) => i % Math.ceil(allPoints.length / 50) === 0)
+  // Limit to 30 sample points (SDA API is slower than Macrostrat)
+  const sampled = allPoints.length > 30
+    ? allPoints.filter((_, i) => i % Math.ceil(allPoints.length / 30) === 0)
     : allPoints;
 
+  let completed = 0;
   for (const pt of sampled) {
     try {
-      const resp = await fetch(`https://macrostrat.org/api/v2/geologic_units/map?lat=${pt.lat}&lng=${pt.lng}&response=short`);
-      const data = await resp.json();
-      if (data.success && data.success.data && data.success.data.length > 0) {
-        const unit = data.success.data[0];
-        const lith = unit.lith || unit.name || 'Unknown';
-        const rockType = (unit.t_type || unit.b_type || '').toLowerCase();
-        const lithLower = lith.toLowerCase() + ' ' + rockType;
-
-        lithologyCounts[lith] = (lithologyCounts[lith] || 0) + 1;
-
-        const isRock = /granite|limestone|sandstone|shale|gneiss|marble|basalt|quartzite|dolomite|slate|schist|rock|bedrock|chalk|chert|rhyolite|andesite/i.test(lithLower);
-        const isSoil = /clay|sand|silt|gravel|alluvium|loam|till|soil|unconsolidated|mud|peat|fill|terrace/i.test(lithLower);
-        if (isRock) terrainSummary.rock++;
-        else if (isSoil) terrainSummary.soil++;
-        else terrainSummary.mixed++;
+      const soil = await querySoilAtPoint(pt.lat, pt.lng);
+      if (soil) {
+        const cls = classifySoilForConstruction({
+          clay: parseFloat(soil.claytotal_r) || 0,
+          sand: parseFloat(soil.sandtotal_r) || 0,
+          silt: parseFloat(soil.silttotal_r) || 0,
+          unifiedcl: soil.unifiedcl || '',
+          rockFragPct: parseFloat(soil.rockfragpct) || 0,
+          bedrockDepthCm: soil.bedrock_depth_cm ? parseFloat(soil.bedrock_depth_cm) : null,
+          texdesc: soil.texdesc || '',
+          piVal: parseFloat(soil.pi_r) || 0
+        });
+        soilDetails.push({
+          lat: pt.lat, lng: pt.lng, route: pt.route,
+          soilName: soil.muname || soil.compname || 'Unknown',
+          texture: soil.texdesc || 'Unknown',
+          unified: soil.unifiedcl || '--',
+          clay: parseFloat(soil.claytotal_r) || 0,
+          rockFrag: parseFloat(soil.rockfragpct) || 0,
+          bedrockCm: soil.bedrock_depth_cm ? parseFloat(soil.bedrock_depth_cm) : null,
+          drainage: soil.drainagecl || '--',
+          classification: cls
+        });
+        soilSummary.types[cls.type] = (soilSummary.types[cls.type] || 0) + 1;
+        soilSummary.methods[cls.method] = (soilSummary.methods[cls.method] || 0) + 1;
+        soilSummary.difficulties[cls.difficulty] = (soilSummary.difficulties[cls.difficulty] || 0) + 1;
       } else {
-        terrainSummary.unknown++;
+        soilSummary.types['No data'] = (soilSummary.types['No data'] || 0) + 1;
       }
-      terrainSummary.totalSampled++;
-      // Small delay to be API-friendly
-      await new Promise(r => setTimeout(r, 80));
+      soilSummary.totalSampled++;
+      completed++;
+      if (completed % 5 === 0) toast(`Soil analysis: ${completed}/${sampled.length} points...`);
+      // Delay between SDA requests
+      await new Promise(r => setTimeout(r, 200));
     } catch (e) {
-      terrainSummary.unknown++;
-      terrainSummary.totalSampled++;
+      soilSummary.types['Error'] = (soilSummary.types['Error'] || 0) + 1;
+      soilSummary.totalSampled++;
+      completed++;
     }
   }
 
-  window.terrainAnalysis = { terrainSummary, lithologyCounts, timestamp: Date.now() };
+  window.terrainAnalysis = { soilSummary, soilDetails, timestamp: Date.now() };
   buildTerrainDashboard();
   scheduleSave();
-  toast('Terrain analysis complete: ' + terrainSummary.totalSampled + ' points sampled', 'success');
+  toast('Soil analysis complete: ' + soilSummary.totalSampled + ' points sampled', 'success');
 }
 
 function buildTerrainDashboard() {
@@ -1886,58 +1978,92 @@ function buildTerrainDashboard() {
     return;
   }
 
-  const ts = window.terrainAnalysis.terrainSummary;
-  const lc = window.terrainAnalysis.lithologyCounts;
-  const total = ts.totalSampled || 1;
-  const rockPct = ((ts.rock / total) * 100).toFixed(1);
-  const soilPct = ((ts.soil / total) * 100).toFixed(1);
-  const mixedPct = (((ts.mixed + ts.unknown) / total) * 100).toFixed(1);
+  const ss = window.terrainAnalysis.soilSummary;
+  const details = window.terrainAnalysis.soilDetails || [];
+  const total = ss.totalSampled || 1;
+
+  // Difficulty aggregation for the bar
+  const easy = (ss.difficulties['easy'] || 0) + (ss.difficulties['easy-moderate'] || 0);
+  const moderate = (ss.difficulties['moderate'] || 0);
+  const hard = (ss.difficulties['hard'] || 0) + (ss.difficulties['very-hard'] || 0);
+  const unknown = ss.difficulties['unknown'] || 0;
+  const easyPct = ((easy / total) * 100).toFixed(1);
+  const modPct = ((moderate / total) * 100).toFixed(1);
+  const hardPct = ((hard / total) * 100).toFixed(1);
+
+  // Build recommended method summary
+  const methodEntries = Object.entries(ss.methods).sort((a,b) => b[1]-a[1]);
+  const primaryMethod = methodEntries.length ? methodEntries[0][0] : '--';
 
   if (container) {
-    const lithRows = Object.entries(lc).sort((a,b) => b[1]-a[1]).slice(0, 8)
-      .map(([lith, count]) => `<div class="card-row"><span class="lbl">${lith}</span><span class="val">${count} (${((count/total)*100).toFixed(0)}%)</span></div>`).join('');
+    const typeRows = Object.entries(ss.types).sort((a,b) => b[1]-a[1])
+      .map(([t, count]) => {
+        const d = details.find(d => d.classification && d.classification.type === t);
+        const clr = d ? d.classification.color : '#94a3b8';
+        return `<div class="card-row"><span class="lbl"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${clr};margin-right:6px;vertical-align:middle;"></span>${t}</span><span class="val">${count} (${((count/total)*100).toFixed(0)}%)</span></div>`;
+      }).join('');
+
+    const methodRows = methodEntries
+      .map(([m, count]) => `<div class="card-row"><span class="lbl">${m}</span><span class="val">${count} (${((count/total)*100).toFixed(0)}%)</span></div>`).join('');
+
+    // Sample detail rows (show up to 6)
+    const detailRows = details.slice(0, 6)
+      .map(d => `<div class="card-row" style="font-size:11px;"><span class="lbl" title="${d.soilName}">${d.texture} (${d.unified})</span><span class="val" style="color:${d.classification.color};font-weight:600;">${d.classification.method}</span></div>`).join('');
 
     container.innerHTML = `
       <div class="dash-section">
         <div class="dash-section-title" style="color:#b45309">
-          Terrain Analysis (surface geology estimate)
+          Soil Conditions &amp; Construction Method (0-5 ft depth)
           <span class="line"></span>
         </div>
         <div class="cost-grid">
           <div class="card">
-            <div class="card-title">Terrain Composition</div>
-            <div class="card-row"><span class="lbl">Rock</span><span class="val" style="font-weight:700">${rockPct}%</span></div>
-            <div class="card-row"><span class="lbl">Soil / Dirt</span><span class="val" style="font-weight:700">${soilPct}%</span></div>
-            <div class="card-row"><span class="lbl">Mixed / Unknown</span><span class="val" style="font-weight:700">${mixedPct}%</span></div>
-            <div class="card-row"><span class="lbl">Sample Points</span><span class="val">${ts.totalSampled}</span></div>
+            <div class="card-title">Construction Difficulty</div>
+            <div class="card-row"><span class="lbl" style="color:#16a34a;">Easy (Plow/Bore)</span><span class="val" style="font-weight:700">${easyPct}%</span></div>
+            <div class="card-row"><span class="lbl" style="color:#d97706;">Moderate (Bore/Trench)</span><span class="val" style="font-weight:700">${modPct}%</span></div>
+            <div class="card-row"><span class="lbl" style="color:#dc2626;">Hard (Rock Bore/Aerial)</span><span class="val" style="font-weight:700">${hardPct}%</span></div>
+            <div class="card-row"><span class="lbl">Primary Method</span><span class="val" style="font-weight:700;color:var(--accent);">${primaryMethod}</span></div>
+            <div class="card-row"><span class="lbl">Sample Points</span><span class="val">${ss.totalSampled}</span></div>
             <div style="margin-top:12px;">
-              <div style="display:flex;height:20px;border-radius:4px;overflow:hidden;">
-                <div style="width:${rockPct}%;background:#78716c;" title="Rock ${rockPct}%"></div>
-                <div style="width:${soilPct}%;background:#a3e635;" title="Soil ${soilPct}%"></div>
-                <div style="width:${mixedPct}%;background:#d4d4d8;" title="Mixed ${mixedPct}%"></div>
+              <div style="display:flex;height:22px;border-radius:4px;overflow:hidden;">
+                <div style="width:${easyPct}%;background:#22c55e;" title="Easy ${easyPct}%"></div>
+                <div style="width:${modPct}%;background:#f59e0b;" title="Moderate ${modPct}%"></div>
+                <div style="width:${hardPct}%;background:#ef4444;" title="Hard ${hardPct}%"></div>
+                ${unknown ? `<div style="width:${((unknown/total)*100).toFixed(1)}%;background:#d4d4d8;" title="Unknown"></div>` : ''}
               </div>
               <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
-                <span>&#9632; Rock</span><span>&#9632; Soil</span><span>&#9632; Mixed</span>
+                <span style="color:#22c55e;">&#9632; Easy</span><span style="color:#f59e0b;">&#9632; Moderate</span><span style="color:#ef4444;">&#9632; Hard</span>
               </div>
             </div>
           </div>
           <div class="card">
-            <div class="card-title">Lithology Breakdown</div>
-            ${lithRows || '<div style="color:var(--text-muted);font-size:12px;">No data</div>'}
+            <div class="card-title">Soil Types Along Route</div>
+            ${typeRows || '<div style="color:var(--text-muted);font-size:12px;">No data</div>'}
+          </div>
+          <div class="card">
+            <div class="card-title">Recommended Construction Methods</div>
+            ${methodRows || '<div style="color:var(--text-muted);font-size:12px;">No data</div>'}
+          </div>
+          <div class="card">
+            <div class="card-title">Sample Points (soil &#8594; method)</div>
+            ${detailRows || '<div style="color:var(--text-muted);font-size:12px;">Load routes to see details</div>'}
+            ${details.length > 6 ? '<div style="font-size:10px;color:var(--text-muted);margin-top:4px;">+ ' + (details.length - 6) + ' more points...</div>' : ''}
           </div>
         </div>
         <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">
-          Data: Macrostrat.org geological database. Estimates based on surface geology along routes — actual subsurface conditions may vary.
+          Data: USDA-NRCS SSURGO Soil Survey (0-5 ft depth). Based on soil texture, Unified classification, rock fragments, and depth to bedrock.
+          Construction method is a recommendation — always verify with geotechnical survey.
         </div>
       </div>`;
   }
 
   if (sidebarEl) {
     sidebarEl.innerHTML = `
-      <div class="stat"><span>Rock</span><span class="val">${rockPct}%</span></div>
-      <div class="stat"><span>Soil / Dirt</span><span class="val">${soilPct}%</span></div>
-      <div class="stat"><span>Mixed</span><span class="val">${mixedPct}%</span></div>
-      <div class="stat"><span>Samples</span><span class="val">${ts.totalSampled}</span></div>`;
+      <div class="stat"><span style="color:#16a34a;">Easy</span><span class="val">${easyPct}%</span></div>
+      <div class="stat"><span style="color:#d97706;">Moderate</span><span class="val">${modPct}%</span></div>
+      <div class="stat"><span style="color:#dc2626;">Hard</span><span class="val">${hardPct}%</span></div>
+      <div class="stat"><span>Method</span><span class="val" style="font-size:10px;">${primaryMethod}</span></div>
+      <div class="stat"><span>Samples</span><span class="val">${ss.totalSampled}</span></div>`;
   }
 }
 
